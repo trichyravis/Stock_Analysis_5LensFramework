@@ -2,7 +2,7 @@
 """
 ═══════════════════════════════════════════════════════════════════════════════
 THE MOUNTAIN PATH - WORLD OF FINANCE
-Nifty 50 Stock Analysis Platform
+Nifty 50 Stock Analysis Platform - Enhanced Landing Page
 Five-Lens Framework with Advanced Risk Metrics
 ═══════════════════════════════════════════════════════════════════════════════
 
@@ -33,151 +33,185 @@ st.set_page_config(
 )
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# ENHANCED CUSTOM CSS - BIG PROMINENT HEADER
+# PROFESSIONAL CUSTOM CSS - LANDING PAGE DESIGN
 # ═══════════════════════════════════════════════════════════════════════════════
 
 st.markdown("""
     <style>
     .main {
-        padding: 0rem 1rem;
+        padding: 0rem 0rem;
     }
     
     /* ════════════════════════════════════════════════════════════ */
-    /* HERO HEADER - IMPROVED LEFT-RIGHT LAYOUT */
+    /* LANDING PAGE HERO SECTION */
     /* ════════════════════════════════════════════════════════════ */
     
-    .hero-title {
-        background: linear-gradient(135deg, #003366 0%, #004d80 50%, #003366 100%);
-        padding: 3rem 2rem;
-        border-radius: 20px;
-        margin: 0rem 0rem 2rem 0rem;
-        box-shadow: 0 12px 30px rgba(0, 51, 102, 0.4);
-        border: 4px solid #003366;
+    .landing-hero {
+        background: linear-gradient(180deg, #001f3f 0%, #003d7a 40%, #00547a 100%);
+        padding: 4rem 2rem;
+        text-align: center;
+        margin: 0;
+        min-height: 600px;
         display: flex;
+        flex-direction: column;
+        justify-content: center;
         align-items: center;
-        gap: 3rem;
+        position: relative;
     }
     
-    /* Mountain emoji on left */
-    .mountain-emoji {
-        font-size: 120px;
-        flex-shrink: 0;
+    /* Mountain emoji */
+    .landing-mountain {
+        font-size: 140px;
+        margin-bottom: 2rem;
         animation: float 3s ease-in-out infinite;
-        text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        text-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
     }
     
-    /* Text content on right */
-    .hero-text-right {
-        flex: 1;
-        text-align: right;
-    }
-    
-    .hero-text-right h1 {
-        font-size: 48px;
+    /* Main title */
+    .landing-title {
+        font-size: 56px;
         font-weight: 900;
         color: white;
-        margin: 0.3rem 0;
-        text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.5);
-        letter-spacing: 3px;
-        line-height: 1.2;
-    }
-    
-    .hero-text-right p:first-of-type {
-        font-size: 20px;
-        color: #E0F0FF;
         margin: 1rem 0;
-        font-weight: 500;
+        text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+        letter-spacing: 2px;
+    }
+    
+    /* Subtitle with gold color */
+    .landing-subtitle {
+        font-size: 40px;
+        color: #FFD700;
+        margin: 0.5rem 0 1.5rem 0;
+        font-weight: 600;
         letter-spacing: 1px;
+        text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3);
     }
     
-    .hero-text-right p:last-of-type {
-        font-size: 16px;
+    /* Tagline */
+    .landing-tagline {
+        font-size: 22px;
         color: #E0F0FF;
-        margin: 0.5rem 0;
+        margin: 1rem 0 3rem 0;
         font-weight: 400;
+        letter-spacing: 0.5px;
+    }
+    
+    /* Five lens cards container */
+    .five-lens-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1.5rem;
+        margin: 3rem 0;
+        max-width: 1200px;
+    }
+    
+    /* Lens card styling */
+    .lens-card {
+        background: linear-gradient(135deg, rgba(0, 51, 102, 0.6) 0%, rgba(0, 77, 128, 0.6) 100%);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        color: white;
+    }
+    
+    .lens-card:hover {
+        border-color: rgba(255, 215, 0, 0.6);
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(255, 215, 0, 0.3);
+    }
+    
+    /* Quality card special styling (highest weight) */
+    .lens-card.quality-card {
+        background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(184, 134, 11, 0.2) 100%);
+        border: 2px solid rgba(255, 215, 0, 0.6);
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+    }
+    
+    .lens-card.quality-card:hover {
+        box-shadow: 0 8px 30px rgba(255, 215, 0, 0.6);
+    }
+    
+    /* Lens icon */
+    .lens-icon {
+        font-size: 48px;
+        margin-bottom: 1rem;
+    }
+    
+    /* Lens name */
+    .lens-name {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0.5rem 0;
+    }
+    
+    /* Lens percentage */
+    .lens-percentage {
+        font-size: 14px;
+        color: #FFD700;
+        font-weight: 600;
+    }
+    
+    /* Action buttons */
+    .button-container {
+        margin: 3rem 0;
+        display: flex;
+        gap: 1.5rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .cta-button {
+        padding: 0.75rem 2rem;
+        font-size: 16px;
+        font-weight: 600;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .button-primary {
+        background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+        color: #003366;
+    }
+    
+    .button-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(255, 215, 0, 0.4);
+    }
+    
+    .button-secondary {
+        background: transparent;
+        color: white;
+        border: 2px solid white;
+    }
+    
+    .button-secondary:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: #FFD700;
+        color: #FFD700;
     }
     
     /* ════════════════════════════════════════════════════════════ */
-    /* RESPONSIVE DESIGN FOR MOBILE */
+    /* MAIN APP STYLING */
     /* ════════════════════════════════════════════════════════════ */
     
-    @media (max-width: 768px) {
-        .hero-title {
-            flex-direction: column;
-            text-align: center;
-            padding: 2rem 1.5rem;
-            gap: 1.5rem;
-        }
-        
-        .mountain-emoji {
-            font-size: 100px;
-            margin: 0;
-        }
-        
-        .hero-text-right {
-            text-align: center;
-        }
-        
-        .hero-text-right h1 {
-            font-size: 42px;
-        }
-        
-        .hero-text-right p:first-of-type {
-            font-size: 18px;
-        }
+    .app-header {
+        padding: 1rem;
+        background: linear-gradient(135deg, #003366 0%, #004d80 100%);
+        border-radius: 10px;
+        margin: 1rem;
     }
-    
-    @media (max-width: 480px) {
-        .hero-title {
-            padding: 1.5rem 1rem;
-        }
-        
-        .mountain-emoji {
-            font-size: 80px;
-        }
-        
-        .hero-text-right h1 {
-            font-size: 36px;
-            letter-spacing: 2px;
-        }
-        
-        .hero-text-right p:first-of-type {
-            font-size: 16px;
-        }
-        
-        .hero-text-right p:last-of-type {
-            font-size: 14px;
-        }
-    }
-    
-    /* Floating animation */
-    @keyframes float {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-25px); }
-    }
-    
-    /* ════════════════════════════════════════════════════════════ */
-    /* METRIC CARDS */
-    /* ════════════════════════════════════════════════════════════ */
     
     .metric-card {
         background: linear-gradient(135deg, #003366 0%, #004d80 100%);
         padding: 1.5rem;
         border-radius: 10px;
         color: white;
-    }
-    
-    .score-excellent {
-        background: linear-gradient(135deg, #00d084 0%, #00a860 100%);
-    }
-    .score-good {
-        background: linear-gradient(135deg, #0084ff 0%, #0066cc 100%);
-    }
-    .score-fair {
-        background: linear-gradient(135deg, #ffa500 0%, #ff8c00 100%);
-    }
-    .score-poor {
-        background: linear-gradient(135deg, #ff4757 0%, #ff3838 100%);
     }
     
     /* ════════════════════════════════════════════════════════════ */
@@ -203,112 +237,155 @@ st.markdown("""
     }
     
     /* ════════════════════════════════════════════════════════════ */
-    /* TABS */
+    /* FLOATING ANIMATION */
     /* ════════════════════════════════════════════════════════════ */
     
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 2px;
-    }
-    
-    [data-testid="stTab"] {
-        padding: 1rem;
-        font-weight: 600;
-        color: #003366;
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-25px); }
     }
     
     /* ════════════════════════════════════════════════════════════ */
-    /* TIME DISPLAY */
+    /* RESPONSIVE DESIGN */
     /* ════════════════════════════════════════════════════════════ */
     
-    .time-display {
-        text-align: center;
-        color: #003366;
-        font-weight: 700;
-        font-size: 18px;
-        margin: 1rem 0;
-        padding: 1rem;
-        background: linear-gradient(135deg, #f0f8ff 0%, #e0f0ff 100%);
-        border-radius: 10px;
-        border-left: 4px solid #003366;
+    @media (max-width: 768px) {
+        .landing-hero {
+            min-height: 400px;
+            padding: 2rem 1rem;
+        }
+        
+        .landing-mountain {
+            font-size: 100px;
+            margin-bottom: 1rem;
+        }
+        
+        .landing-title {
+            font-size: 42px;
+        }
+        
+        .landing-subtitle {
+            font-size: 28px;
+        }
+        
+        .landing-tagline {
+            font-size: 18px;
+        }
+        
+        .five-lens-container {
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .landing-hero {
+            min-height: 300px;
+        }
+        
+        .landing-mountain {
+            font-size: 80px;
+        }
+        
+        .landing-title {
+            font-size: 32px;
+        }
+        
+        .landing-subtitle {
+            font-size: 22px;
+        }
+        
+        .five-lens-container {
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        }
     }
     
     </style>
 """, unsafe_allow_html=True)
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# ENHANCED HERO HEADER - BIG AND PROMINENT
+# SESSION STATE FOR APP MODE
 # ═══════════════════════════════════════════════════════════════════════════════
 
-st.markdown("""
-    <div class="hero-title">
-        <div class="mountain-emoji">🏔️</div>
-        <div class="hero-text-right">
-            <h1>THE MOUNTAIN PATH</h1>
-            <h1>WORLD OF FINANCE</h1>
-            <p>Stock Analysis Platform Using Five Lens Framework</p>
-            <p>Valuation (20%) • Quality (25%) • Growth (20%) • Financial Health (20%) • Risk & Momentum (15%)</p>
+if 'show_landing' not in st.session_state:
+    st.session_state.show_landing = True
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# LANDING PAGE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+if st.session_state.show_landing:
+    
+    st.markdown("""
+        <div class="landing-hero">
+            <div class="landing-mountain">🏔️</div>
+            <div class="landing-title">THE MOUNTAIN PATH</div>
+            <div class="landing-subtitle">World of Finance</div>
+            <div class="landing-tagline">Your Intelligent Stock Analysis Platform</div>
+            
+            <div class="five-lens-container">
+                <div class="lens-card">
+                    <div class="lens-icon">📊</div>
+                    <div class="lens-name">Valuation</div>
+                    <div class="lens-percentage">(20%)</div>
+                </div>
+                
+                <div class="lens-card quality-card">
+                    <div class="lens-icon">🏆</div>
+                    <div class="lens-name">Quality</div>
+                    <div class="lens-percentage">(25%)</div>
+                </div>
+                
+                <div class="lens-card">
+                    <div class="lens-icon">📈</div>
+                    <div class="lens-name">Growth</div>
+                    <div class="lens-percentage">(20%)</div>
+                </div>
+                
+                <div class="lens-card">
+                    <div class="lens-icon">💰</div>
+                    <div class="lens-name">Financial Health</div>
+                    <div class="lens-percentage">(20%)</div>
+                </div>
+                
+                <div class="lens-card">
+                    <div class="lens-icon">⚡</div>
+                    <div class="lens-name">Risk & Momentum</div>
+                    <div class="lens-percentage">(15%)</div>
+                </div>
+            </div>
+            
+            <div class="button-container">
+                <button class="cta-button button-primary" onclick="document.querySelector('button').click()">
+                    📊 Explore Stocks
+                </button>
+                <button class="cta-button button-secondary">
+                    Learn Framework →
+                </button>
+            </div>
         </div>
-    </div>
-""", unsafe_allow_html=True)
-
-# Time display
-st.markdown(f"""
-    <div class="time-display">
-    📊 Last Updated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
-    </div>
-""", unsafe_allow_html=True)
-
-st.markdown("---")
+    """, unsafe_allow_html=True)
+    
+    # Add buttons to navigate
+    col1, col2, col3 = st.columns([1, 2, 1])
+    
+    with col2:
+        if st.button("🚀 Launch Stock Analysis Platform", key="launch_app", use_container_width=True):
+            st.session_state.show_landing = False
+            st.rerun()
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# SIDEBAR
+# MAIN APP
 # ═══════════════════════════════════════════════════════════════════════════════
 
-st.sidebar.markdown("---")
-st.sidebar.write("### 📊 STOCK ANALYSIS TOOL")
-st.sidebar.write("Advanced Five-Lens Framework with Risk Metrics")
-st.sidebar.markdown("---")
-
-# Select analysis mode
-analysis_mode = st.sidebar.radio(
-    "Select Mode:",
-    ["Single Stock Analysis", "Sector Comparison", "Peer Benchmarking", "Portfolio Risk"]
-)
-
-st.sidebar.markdown("---")
-st.sidebar.write("**About This Tool**")
-st.sidebar.write(
-    """
-    This platform uses the Five-Lens Framework to evaluate stocks:
-    - 🎯 **Valuation Lens** (20%)
-    - ✨ **Quality Lens** (25%)
-    - 📈 **Growth Lens** (20%)
-    - 💪 **Financial Health** (20%)
-    - ⚡ **Risk & Momentum** (15%)
-    """
-)
-
-st.sidebar.markdown("---")
-st.sidebar.write("**Prof. V. Ravichandran**")
-st.sidebar.write("*28+ Years Finance Experience*")
-st.sidebar.write("*10+ Years Academic Excellence*")
-
-# LinkedIn Profile Link
-st.sidebar.markdown("""
-    <a href="https://www.linkedin.com/in/trichyravis" target="_blank" 
-       style="display: inline-block; margin-top: 1rem; padding: 0.5rem 1rem; 
-              background: linear-gradient(135deg, #0077b5 0%, #0a66c2 100%); 
-              color: white; text-decoration: none; border-radius: 5px; 
-              font-weight: 600; text-align: center;">
-       🔗 LinkedIn Profile
-    </a>
-""", unsafe_allow_html=True)
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# MODE 1: SINGLE STOCK ANALYSIS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-if analysis_mode == "Single Stock Analysis":
+else:
+    
+    # Back to landing button
+    if st.button("← Back to Home", key="back_home"):
+        st.session_state.show_landing = True
+        st.rerun()
+    
+    st.markdown("---")
     
     # Get registry
     registry = DataFetcher.get_nifty50_registry()
@@ -351,7 +428,7 @@ if analysis_mode == "Single Stock Analysis":
                 stock_data = DataFetcher.extract_stock_data(info, price_hist)
                 financial_metrics = DataFetcher.extract_financial_metrics(info)
                 
-                # ✅ Calculate Beta
+                # Calculate Beta
                 beta = DataFetcher.calculate_beta(selected_company, price_hist, market_data)
                 
                 # Calculate risk metrics
@@ -361,17 +438,14 @@ if analysis_mode == "Single Stock Analysis":
                     stock_data.get('current_price')
                 )
                 
-                # ✅ Add beta to risk metrics
+                # Add beta to risk metrics
                 risk_metrics['beta'] = beta
                 
                 # Evaluate using Five-Lens Framework
                 framework = FiveLensFramework()
                 lens_scores = framework.evaluate_stock(stock_data, financial_metrics, risk_metrics)
                 
-                # ═════════════════════════════════════════════════════════════
                 # DISPLAY RESULTS
-                # ═════════════════════════════════════════════════════════════
-                
                 st.markdown(f"## {selected_company} ({symbol})")
                 
                 # Key Metrics Row
@@ -505,129 +579,42 @@ if analysis_mode == "Single Stock Analysis":
                     )
                     
                     st.plotly_chart(fig, use_container_width=True)
-                
-                st.markdown("---")
-                
-                # Detailed Breakdown
-                st.markdown("### 📊 DETAILED ANALYSIS")
-                
-                tab1, tab2, tab3, tab4 = st.tabs(
-                    ["Valuation", "Quality", "Growth", "Financial Health & Risk"]
-                )
-                
-                with tab1:
-                    st.write(f"**Valuation Score: {lens_scores.valuation:.1f}/100**")
-                    col1, col2, col3, col4 = st.columns(4)
-                    with col1:
-                        pe_ratio = stock_data.get('pe_ratio')
-                        if pe_ratio and not np.isnan(pe_ratio):
-                            st.metric("P/E Ratio", f"{pe_ratio:.1f}x")
-                        else:
-                            st.metric("P/E Ratio", "N/A")
-                    with col2:
-                        pb_ratio = stock_data.get('pb_ratio')
-                        if pb_ratio and not np.isnan(pb_ratio):
-                            st.metric("P/B Ratio", f"{pb_ratio:.2f}x")
-                        else:
-                            st.metric("P/B Ratio", "N/A")
-                    with col3:
-                        ps_ratio = stock_data.get('ps_ratio')
-                        if ps_ratio and not np.isnan(ps_ratio):
-                            st.metric("P/S Ratio", f"{ps_ratio:.2f}x")
-                        else:
-                            st.metric("P/S Ratio", "N/A")
-                    with col4:
-                        div_yield = stock_data.get('dividend_yield') or 0
-                        st.metric("Div Yield", f"{(div_yield*100):.2f}%")
-                
-                with tab2:
-                    st.write(f"**Quality Score: {lens_scores.quality:.1f}/100**")
-                    col1, col2, col3, col4 = st.columns(4)
-                    with col1:
-                        roe = financial_metrics.get('roe') or 0
-                        st.metric("ROE", f"{(roe*100):.1f}%")
-                    with col2:
-                        npm = financial_metrics.get('npm') or 0
-                        st.metric("NPM", f"{(npm*100):.1f}%")
-                    with col3:
-                        roa = financial_metrics.get('roa') or 0
-                        st.metric("ROA", f"{(roa*100):.1f}%")
-                    with col4:
-                        roic = financial_metrics.get('roic') or 0
-                        st.metric("ROIC", f"{(roic*100):.1f}%")
-                
-                with tab3:
-                    st.write(f"**Growth Score: {lens_scores.growth:.1f}/100**")
-                    col1, col2, col3 = st.columns(3)
-                    with col1:
-                        rev_growth = financial_metrics.get('revenue_growth_yoy') or 0
-                        st.metric("Revenue Growth", f"{(rev_growth*100):.1f}%")
-                    with col2:
-                        earnings_growth = financial_metrics.get('earnings_growth_yoy') or 0
-                        st.metric("Earnings Growth", f"{(earnings_growth*100):.1f}%")
-                    with col3:
-                        peg = financial_metrics.get('peg_ratio')
-                        if peg and not np.isnan(peg):
-                            st.metric("PEG Ratio", f"{peg:.2f}")
-                        else:
-                            st.metric("PEG Ratio", "N/A")
-                
-                with tab4:
-                    col1, col2 = st.columns(2)
-                    with col1:
-                        st.write(f"**Financial Health Score: {lens_scores.financial_health:.1f}/100**")
-                        col_a, col_b, col_c = st.columns(3)
-                        
-                        with col_a:
-                            de_ratio = financial_metrics.get('debt_to_equity')
-                            if de_ratio is not None and not np.isnan(de_ratio):
-                                st.metric("D/E Ratio", f"{de_ratio:.2f}")
-                            else:
-                                st.metric("D/E Ratio", "N/A", help="Balance sheet data unavailable")
-                        
-                        with col_b:
-                            cr = financial_metrics.get('current_ratio')
-                            if cr is not None and not np.isnan(cr):
-                                st.metric("Current Ratio", f"{cr:.2f}")
-                            else:
-                                st.metric("Current Ratio", "N/A", help="Balance sheet data unavailable")
-                        
-                        with col_c:
-                            ic = financial_metrics.get('interest_coverage')
-                            if ic is not None and not np.isnan(ic):
-                                st.metric("Interest Coverage", f"{ic:.2f}x")
-                            else:
-                                st.metric("Interest Coverage", "N/A", help="Financial data unavailable")
-                    
-                    with col2:
-                        st.write(f"**Risk & Momentum Score: {lens_scores.risk_momentum:.1f}/100**")
-                        col_a, col_b, col_c = st.columns(3)
-                        
-                        with col_a:
-                            if beta is not None and not np.isnan(beta):
-                                st.metric("Beta", f"{beta:.2f}x")
-                            else:
-                                st.metric("Beta", "N/A", help="Market data not available")
-                        
-                        with col_b:
-                            volatility = risk_metrics.get('volatility_252d', 0.25)
-                            st.metric("Volatility (252d)", f"{(volatility*100):.1f}%")
-                        
-                        with col_c:
-                            sharpe = risk_metrics.get('sharpe_ratio', 0.5)
-                            st.metric("Sharpe Ratio", f"{sharpe:.2f}")
-                
-                st.markdown("---")
-                
-                # Risk Profile Summary
-                st.markdown("### ⚠️ RISK PROFILE")
-                risk_summary = RiskMetricsCalculator.risk_profile_summary(risk_metrics)
-                st.write(risk_summary)
-                
-                # Investment Recommendation
-                st.markdown("### 💡 INVESTMENT RECOMMENDATION")
-                recommendation = framework.generate_recommendation(lens_scores, stock_data)
-                st.markdown(recommendation)
+
+# ═════════════════════════════════════════════════════════════════════════════════
+# SIDEBAR
+# ═════════════════════════════════════════════════════════════════════════════════
+
+st.sidebar.markdown("---")
+st.sidebar.write("### 📊 STOCK ANALYSIS TOOL")
+st.sidebar.write("Advanced Five-Lens Framework")
+st.sidebar.markdown("---")
+
+st.sidebar.write("**About This Tool**")
+st.sidebar.write(
+    """
+    Five-Lens Framework:
+    - 🎯 Valuation (20%)
+    - ✨ Quality (25%)
+    - 📈 Growth (20%)
+    - 💪 Financial Health (20%)
+    - ⚡ Risk & Momentum (15%)
+    """
+)
+
+st.sidebar.markdown("---")
+st.sidebar.write("**Prof. V. Ravichandran**")
+st.sidebar.write("*28+ Years Finance Experience*")
+st.sidebar.write("*10+ Years Academic Excellence*")
+
+st.sidebar.markdown("""
+    <a href="https://www.linkedin.com/in/trichyravis" target="_blank" 
+       style="display: inline-block; margin-top: 1rem; padding: 0.5rem 1rem; 
+              background: linear-gradient(135deg, #0077b5 0%, #0a66c2 100%); 
+              color: white; text-decoration: none; border-radius: 5px; 
+              font-weight: 600; text-align: center;">
+       🔗 LinkedIn Profile
+    </a>
+""", unsafe_allow_html=True)
 
 # ═════════════════════════════════════════════════════════════════════════════════
 # FOOTER
@@ -637,7 +624,7 @@ st.markdown("---")
 st.markdown("""
     <div style="text-align: center; color: #666; padding: 2rem;">
         <p><strong>THE MOUNTAIN PATH - WORLD OF FINANCE</strong></p>
-        <p>Advanced Stock Analysis Platform with Five-Lens Framework</p>
+        <p>Stock Analysis Platform Using Five Lens Framework</p>
         <p>Prof. V. Ravichandran | 28+ Years Finance Experience</p>
         <p style="margin-top: 1rem;">
             <a href="https://www.linkedin.com/in/trichyravis" target="_blank" 
@@ -646,13 +633,6 @@ st.markdown("""
                       color: white; text-decoration: none; border-radius: 5px; 
                       font-weight: 600; margin: 0 0.5rem;">
                🔗 LinkedIn Profile
-            </a>
-            <a href="https://github.com/trichyravis" target="_blank" 
-               style="display: inline-block; padding: 0.5rem 1.5rem; 
-                      background: linear-gradient(135deg, #333 0%, #555 100%); 
-                      color: white; text-decoration: none; border-radius: 5px; 
-                      font-weight: 600; margin: 0 0.5rem;">
-               🐙 GitHub
             </a>
         </p>
         <p style="font-size: 0.8rem; margin-top: 1rem;">
