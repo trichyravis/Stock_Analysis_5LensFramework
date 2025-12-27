@@ -1,3 +1,4 @@
+
 """
 ═══════════════════════════════════════════════════════════════════════════════
 THE MOUNTAIN PATH - WORLD OF FINANCE
@@ -643,32 +644,46 @@ class FiveLensFramework:
         scores = []
         weights_local = []
         
-        # Beta (35%)
+        # Beta (35%) - FIXED: Proper None handling
         beta = risk_metrics.get('beta')
-        if beta and not np.isnan(beta):
+        # Only evaluate if beta is not None and is a valid number
+        if beta is not None and not np.isnan(beta):
             beta_score = self._evaluate_beta(beta)
             scores.append(beta_score)
+            weights_local.append(0.35)
+        # If beta is None/missing, use neutral score
+        else:
+            scores.append(50.0)  # Neutral score when beta unavailable
             weights_local.append(0.35)
         
         # Volatility (30%)
         volatility = risk_metrics.get('volatility_252d')
-        if volatility and not np.isnan(volatility):
+        if volatility is not None and not np.isnan(volatility):
             vol_score = self._evaluate_volatility(volatility)
             scores.append(vol_score)
+            weights_local.append(0.30)
+        else:
+            scores.append(50.0)  # Neutral score
             weights_local.append(0.30)
         
         # Sharpe Ratio (20%)
         sharpe = risk_metrics.get('sharpe_ratio')
-        if sharpe and not np.isnan(sharpe):
+        if sharpe is not None and not np.isnan(sharpe):
             sharpe_score = self._evaluate_sharpe_ratio(sharpe)
             scores.append(sharpe_score)
+            weights_local.append(0.20)
+        else:
+            scores.append(50.0)  # Neutral score
             weights_local.append(0.20)
         
         # Price Momentum (15%)
         momentum = stock_data.get('price_momentum_52w')
-        if momentum and not np.isnan(momentum):
+        if momentum is not None and not np.isnan(momentum):
             mom_score = self._evaluate_momentum(momentum)
             scores.append(mom_score)
+            weights_local.append(0.15)
+        else:
+            scores.append(50.0)  # Neutral score
             weights_local.append(0.15)
         
         if not scores:
@@ -687,19 +702,28 @@ class FiveLensFramework:
         Beta < 1.0 is more stable
         Beta > 1.0 is more volatile
         Optimal for conservative: 0.7-1.0
+        
+        IMPORTANT: This receives ACTUAL beta value (not 1.0 default!)
+        so different stocks will have different scores
         """
+        # Handle edge cases
+        if np.isnan(beta) or beta is None:
+            return 50.0  # Neutral
+        
         if beta < 0:
             return 30.0
         elif beta < 0.7:
-            return 85.0  # Low volatility
+            return 85.0  # Low volatility / Defensive
         elif beta < 1.0:
-            return 90.0  # Optimal
+            return 90.0  # Optimal / Moderate
         elif beta < 1.3:
             return 75.0  # Moderate volatility
         elif beta < 1.5:
             return 60.0  # Higher volatility
+        elif beta < 1.8:
+            return 45.0  # Very volatile
         else:
-            return 40.0  # Very volatile
+            return 35.0  # Extremely volatile
 
     @staticmethod
     def _evaluate_volatility(volatility: float) -> float:
@@ -708,6 +732,10 @@ class FiveLensFramework:
         Lower is better
         Optimal: <20%
         """
+        # Handle edge cases
+        if volatility is None or np.isnan(volatility):
+            return 50.0
+        
         vol_pct = volatility * 100
         
         if vol_pct < 15:
@@ -729,6 +757,10 @@ class FiveLensFramework:
         Excellent: >1.0
         Good: 0.5-1.0
         """
+        # Handle edge cases
+        if sharpe is None or np.isnan(sharpe):
+            return 50.0
+        
         if sharpe < 0:
             return 30.0
         elif sharpe < 0.25:
@@ -749,6 +781,10 @@ class FiveLensFramework:
         Positive is better
         Range: -1.0 to +1.0 (as return percentage)
         """
+        # Handle edge cases
+        if momentum is None or np.isnan(momentum):
+            return 50.0
+        
         momentum_pct = momentum * 100
         
         if momentum_pct < -20:
