@@ -476,9 +476,11 @@ elif analysis_mode == "Sector Comparison":
             if price_hist is not None:
                 stock_data = DataFetcher.extract_stock_data(info, price_hist)
                 financial_metrics = DataFetcher.extract_financial_metrics(info)
+                beta = DataFetcher.calculate_beta(selected_stock, price_hist, market_data)
                 risk_metrics = RiskMetricsCalculator.calculate_all_risk_metrics(
                     price_hist['Close'], market_data, stock_data.get('current_price')
                 )
+                risk_metrics['beta'] = beta
                 
                 framework = FiveLensFramework()
                 lens_scores = framework.evaluate_stock(stock_data, financial_metrics, risk_metrics)
