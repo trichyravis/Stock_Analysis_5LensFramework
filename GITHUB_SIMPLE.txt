@@ -1,0 +1,180 @@
+═══════════════════════════════════════════════════════════════════════════════
+                    GITHUB FILES - SIMPLE ANSWER
+═══════════════════════════════════════════════════════════════════════════════
+
+QUESTION: What files do I need to add to GitHub?
+
+ANSWER: 5 files MINIMUM, 7 files RECOMMENDED
+
+═══════════════════════════════════════════════════════════════════════════════
+MINIMUM (5 CRITICAL FILES - App will work)
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ streamlit_app.py
+✅ five_lens_framework.py
+✅ risk_metrics.py
+✅ data_fetcher.py
+✅ requirements.txt
+
+Add ONLY these 5 files if you want the app working ASAP.
+Everything else is optional.
+
+═══════════════════════════════════════════════════════════════════════════════
+RECOMMENDED (7 FILES - Professional approach) ⭐ SUGGESTED
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ streamlit_app.py
+✅ five_lens_framework.py
+✅ risk_metrics.py
+✅ data_fetcher.py
+✅ requirements.txt
+✅ README.md          (NEW - Project description)
+✅ .gitignore         (NEW - Clean repository)
+
+Add these 7 files for a professional-looking repo.
+Takes 2 extra minutes to create README.md and .gitignore.
+
+═══════════════════════════════════════════════════════════════════════════════
+OPTIONAL FILES (Can add for documentation)
+═══════════════════════════════════════════════════════════════════════════════
+
+Optional (but nice to have):
+  • SETUP_GUIDE.md
+  • QUICKSTART.md
+  • DEPLOYMENT.md
+  • PROJECT_SUMMARY.md
+  • START_HERE.md
+  • GITHUB_GUIDE.md
+  • GITHUB_CHECKLIST.txt
+  • demo_analysis.py
+
+These help users understand the project but aren't required.
+
+═══════════════════════════════════════════════════════════════════════════════
+DO NOT ADD THESE:
+═══════════════════════════════════════════════════════════════════════════════
+
+❌ __pycache__/ folder
+❌ *.pyc files
+❌ .streamlit/ folder
+❌ venv/ folder
+❌ .env files
+
+(The .gitignore file will exclude these automatically)
+
+═══════════════════════════════════════════════════════════════════════════════
+HOW TO ADD TO GITHUB (3 STEPS)
+═══════════════════════════════════════════════════════════════════════════════
+
+STEP 1: Put these files in one folder
+  mountain-path/
+  ├── streamlit_app.py
+  ├── five_lens_framework.py
+  ├── risk_metrics.py
+  ├── data_fetcher.py
+  ├── requirements.txt
+  ├── README.md (optional)
+  └── .gitignore (optional)
+
+STEP 2: Run these commands in that folder
+  git init
+  git add .
+  git commit -m "Initial commit"
+  git branch -M main
+  git remote add origin https://github.com/YOUR_USERNAME/mountain-path.git
+  git push -u origin main
+
+STEP 3: Done! ✅
+  Your files are on GitHub
+
+═══════════════════════════════════════════════════════════════════════════════
+STREAMLIT CLOUD WILL DEPLOY (Automatically)
+═══════════════════════════════════════════════════════════════════════════════
+
+When you deploy to Streamlit Cloud:
+
+1. It reads: requirements.txt
+2. It installs: All packages
+3. It runs: streamlit_app.py
+4. It loads: Other Python files
+5. Result: Your app is LIVE! 🎉
+
+The other files (README.md, documentation) help visitors on GitHub
+but are NOT needed for the app to work.
+
+═══════════════════════════════════════════════════════════════════════════════
+EXAMPLE REPOSITORY VIEW ON GITHUB
+═══════════════════════════════════════════════════════════════════════════════
+
+When someone visits github.com/USERNAME/mountain-path they'll see:
+
+  📁 mountain-path
+
+  README.md content here (if you included it)
+
+  Files:
+    ✓ streamlit_app.py (31 KB)
+    ✓ five_lens_framework.py (29 KB)
+    ✓ risk_metrics.py (17 KB)
+    ✓ data_fetcher.py (12 KB)
+    ✓ requirements.txt (1 KB)
+    ✓ README.md (optional)
+    ✓ .gitignore (optional)
+
+═══════════════════════════════════════════════════════════════════════════════
+MY RECOMMENDATION
+═══════════════════════════════════════════════════════════════════════════════
+
+Use OPTION 2: Add 7 files
+
+Why?
+  ✓ App works perfectly
+  ✓ Professional looking
+  ✓ Takes only 10 minutes
+  ✓ People understand your project
+  ✓ Clean repository
+
+═══════════════════════════════════════════════════════════════════════════════
+QUICK REFERENCE
+═══════════════════════════════════════════════════════════════════════════════
+
+What are the ESSENTIAL files?
+  → streamlit_app.py, five_lens_framework.py, risk_metrics.py,
+    data_fetcher.py, requirements.txt (5 files)
+
+What should I add for a professional repo?
+  → Also add: README.md and .gitignore (7 files total)
+
+What about all the documentation files?
+  → Optional. App works without them. But nice for users.
+
+Which file does Streamlit Cloud READ?
+  → requirements.txt (to install packages)
+  → streamlit_app.py (to run the app)
+
+═══════════════════════════════════════════════════════════════════════════════
+TL;DR - JUST TELL ME WHAT TO DO
+═══════════════════════════════════════════════════════════════════════════════
+
+1. Create folder: mountain-path/
+2. Add these files:
+   ✓ streamlit_app.py
+   ✓ five_lens_framework.py
+   ✓ risk_metrics.py
+   ✓ data_fetcher.py
+   ✓ requirements.txt
+   ✓ README.md
+   ✓ .gitignore
+3. Run git commands (see GITHUB_CHECKLIST.txt)
+4. Go to Streamlit Cloud
+5. Deploy
+6. Your app is live! 🎉
+
+═══════════════════════════════════════════════════════════════════════════════
+
+Questions? See:
+  • GITHUB_GUIDE.md (detailed guide)
+  • GITHUB_CHECKLIST.txt (commands to copy-paste)
+  • GITHUB_STRUCTURE.txt (visual folder structure)
+
+═══════════════════════════════════════════════════════════════════════════════
