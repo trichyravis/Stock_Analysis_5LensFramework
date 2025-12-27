@@ -96,14 +96,13 @@ st.markdown("""
     
     .time-display {
         text-align: center;
-        color: #003366;
-        font-weight: 700;
-        font-size: 18px;
-        margin: 1rem 0;
-        padding: 1rem;
-        background: linear-gradient(135deg, #f0f8ff 0%, #e0f0ff 100%);
-        border-radius: 10px;
-        border-left: 4px solid #003366;
+        color: #666;
+        font-weight: 500;
+        font-size: 12px;
+        margin: 0;
+        padding: 0.5rem 0;
+        background: transparent;
+        border: none;
     }
     
     h1 {
@@ -199,12 +198,6 @@ st.markdown("""
             <p>Stock Analysis Platform Using Five Lens Framework</p>
             <p>Valuation (20%) • Quality (25%) • Growth (20%) • Financial Health (20%) • Risk & Momentum (15%)</p>
         </div>
-    </div>
-""", unsafe_allow_html=True)
-
-st.markdown(f"""
-    <div class="time-display">
-    📊 Last Updated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
     </div>
 """, unsafe_allow_html=True)
 
@@ -778,7 +771,6 @@ elif analysis_mode == "Portfolio Risk":
             step=100000,
             key="portfolio_value"
         )
-        st.session_state.portfolio_value = portfolio_value
     
     with col2:
         st.metric("Current Holdings", len(st.session_state.portfolio_holdings))
@@ -811,7 +803,7 @@ elif analysis_mode == "Portfolio Risk":
             else:
                 # Get current market price
                 current_price = nifty50_companies[add_stock]["price"]
-                investment_value = portfolio_value * (allocation_pct / 100)
+                investment_value = st.session_state.portfolio_value * (allocation_pct / 100)
                 shares = investment_value / current_price
                 
                 # Add to portfolio
@@ -1086,7 +1078,7 @@ with col5:
 # ═════════════════════════════════════════════════════════════════════════════════
 
 st.markdown("---")
-st.markdown("""
+st.markdown(f"""
     <div style="text-align: center; color: #666; padding: 2rem;">
         <p><strong>THE MOUNTAIN PATH - WORLD OF FINANCE</strong></p>
         <p>Advanced Stock Analysis Platform with Five-Lens Framework</p>
@@ -1111,5 +1103,8 @@ st.markdown("""
             Disclaimer: This tool is for educational purposes. Not financial advice. 
             Always consult with a qualified financial advisor before making investment decisions.
         </p>
+        <div class="time-display">
+            📊 Last Updated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+        </div>
     </div>
 """, unsafe_allow_html=True)
