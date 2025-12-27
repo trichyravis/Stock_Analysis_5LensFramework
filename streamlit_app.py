@@ -226,6 +226,17 @@ st.sidebar.write("**Prof. V. Ravichandran**")
 st.sidebar.write("*28+ Years Finance Experience*")
 st.sidebar.write("*10+ Years Academic Excellence*")
 
+# LinkedIn Profile Link
+st.sidebar.markdown("""
+    <a href="https://www.linkedin.com/in/trichyravis" target="_blank" 
+       style="display: inline-block; margin-top: 1rem; padding: 0.5rem 1rem; 
+              background: linear-gradient(135deg, #0077b5 0%, #0a66c2 100%); 
+              color: white; text-decoration: none; border-radius: 5px; 
+              font-weight: 600; text-align: center;">
+       🔗 LinkedIn Profile
+    </a>
+""", unsafe_allow_html=True)
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # MODE 1: SINGLE STOCK ANALYSIS
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -561,6 +572,22 @@ st.markdown("""
         <p><strong>THE MOUNTAIN PATH - WORLD OF FINANCE</strong></p>
         <p>Advanced Stock Analysis Platform with Five-Lens Framework</p>
         <p>Prof. V. Ravichandran | 28+ Years Finance Experience</p>
+        <p style="margin-top: 1rem;">
+            <a href="https://www.linkedin.com/in/trichyravis" target="_blank" 
+               style="display: inline-block; padding: 0.5rem 1.5rem; 
+                      background: linear-gradient(135deg, #0077b5 0%, #0a66c2 100%); 
+                      color: white; text-decoration: none; border-radius: 5px; 
+                      font-weight: 600; margin: 0 0.5rem;">
+               🔗 LinkedIn Profile
+            </a>
+            <a href="https://github.com/trichyravis" target="_blank" 
+               style="display: inline-block; padding: 0.5rem 1.5rem; 
+                      background: linear-gradient(135deg, #333 0%, #555 100%); 
+                      color: white; text-decoration: none; border-radius: 5px; 
+                      font-weight: 600; margin: 0 0.5rem;">
+               🐙 GitHub
+            </a>
+        </p>
         <p style="font-size: 0.8rem; margin-top: 1rem;">
             Disclaimer: This tool is for educational purposes. Not financial advice. 
             Always consult with a qualified financial advisor before making investment decisions.
