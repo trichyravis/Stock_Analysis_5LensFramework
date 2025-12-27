@@ -179,8 +179,8 @@ st.markdown("""
         <div class="mountain-emoji">🏔️</div>
         <h1>THE MOUNTAIN PATH</h1>
         <h1 style="margin-top: -0.5rem; margin-bottom: 1.5rem;">WORLD OF FINANCE</h1>
-        <p>Advanced Stock Analysis Platform</p>
-        <p>Five-Lens Framework with Professional Risk Metrics</p>
+        <p>Stock Analysis Platform Using Five Lens Framework</p>
+        <p style="font-size: 16px;">Valuation (20%) • Quality (25%) • Growth (20%) • Financial Health (20%) • Risk & Momentum (15%)</p>
     </div>
 """, unsafe_allow_html=True)
 
