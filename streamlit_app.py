@@ -27,23 +27,81 @@ from data_fetcher import DataFetcher
 
 st.set_page_config(
     page_title="The Mountain Path - Stock Analysis",
-    page_icon="📈",
+    page_icon="🏔️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS
+# ═══════════════════════════════════════════════════════════════════════════════
+# ENHANCED CUSTOM CSS - BIG PROMINENT HEADER
+# ═══════════════════════════════════════════════════════════════════════════════
+
 st.markdown("""
     <style>
     .main {
         padding: 0rem 1rem;
     }
+    
+    /* ════════════════════════════════════════════════════════════ */
+    /* HERO HEADER - BIG AND PROMINENT */
+    /* ════════════════════════════════════════════════════════════ */
+    
+    .hero-title {
+        background: linear-gradient(135deg, #003366 0%, #004d80 50%, #003366 100%);
+        padding: 4rem 2rem;
+        border-radius: 20px;
+        text-align: center;
+        margin: 0rem 0rem 2rem 0rem;
+        box-shadow: 0 12px 30px rgba(0, 51, 102, 0.4);
+        border: 4px solid #003366;
+    }
+    
+    /* Mountain emoji - HUGE AND ANIMATED */
+    .mountain-emoji {
+        font-size: 160px;
+        margin-bottom: 1.5rem;
+        display: block;
+        animation: float 3s ease-in-out infinite;
+        text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    }
+    
+    /* Main title - VERY LARGE */
+    .hero-title h1 {
+        font-size: 56px;
+        font-weight: 900;
+        color: white;
+        margin: 0.3rem 0;
+        text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.5);
+        letter-spacing: 3px;
+        line-height: 1.2;
+    }
+    
+    /* Subtitle */
+    .hero-title p {
+        font-size: 18px;
+        color: #E0F0FF;
+        margin: 0.7rem 0;
+        font-weight: 500;
+        letter-spacing: 1px;
+    }
+    
+    /* Floating animation */
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-25px); }
+    }
+    
+    /* ════════════════════════════════════════════════════════════ */
+    /* METRIC CARDS */
+    /* ════════════════════════════════════════════════════════════ */
+    
     .metric-card {
         background: linear-gradient(135deg, #003366 0%, #004d80 100%);
         padding: 1.5rem;
         border-radius: 10px;
         color: white;
     }
+    
     .score-excellent {
         background: linear-gradient(135deg, #00d084 0%, #00a860 100%);
     }
@@ -56,17 +114,84 @@ st.markdown("""
     .score-poor {
         background: linear-gradient(135deg, #ff4757 0%, #ff3838 100%);
     }
+    
+    /* ════════════════════════════════════════════════════════════ */
+    /* HEADINGS */
+    /* ════════════════════════════════════════════════════════════ */
+    
     h1 {
         color: #003366;
-        border-bottom: 3px solid #003366;
-        padding-bottom: 0.5rem;
+        border-bottom: 4px solid #003366;
+        padding-bottom: 0.8rem;
+        font-size: 40px;
     }
+    
     h2 {
         color: #003366;
-        margin-top: 1.5rem;
+        margin-top: 2rem;
+        font-size: 32px;
     }
+    
+    h3 {
+        color: #004d80;
+        font-size: 24px;
+    }
+    
+    /* ════════════════════════════════════════════════════════════ */
+    /* TABS */
+    /* ════════════════════════════════════════════════════════════ */
+    
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 2px;
+    }
+    
+    [data-testid="stTab"] {
+        padding: 1rem;
+        font-weight: 600;
+        color: #003366;
+    }
+    
+    /* ════════════════════════════════════════════════════════════ */
+    /* TIME DISPLAY */
+    /* ════════════════════════════════════════════════════════════ */
+    
+    .time-display {
+        text-align: center;
+        color: #003366;
+        font-weight: 700;
+        font-size: 18px;
+        margin: 1rem 0;
+        padding: 1rem;
+        background: linear-gradient(135deg, #f0f8ff 0%, #e0f0ff 100%);
+        border-radius: 10px;
+        border-left: 4px solid #003366;
+    }
+    
     </style>
 """, unsafe_allow_html=True)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ENHANCED HERO HEADER - BIG AND PROMINENT
+# ═══════════════════════════════════════════════════════════════════════════════
+
+st.markdown("""
+    <div class="hero-title">
+        <div class="mountain-emoji">🏔️</div>
+        <h1>THE MOUNTAIN PATH</h1>
+        <h1 style="margin-top: -0.5rem; margin-bottom: 1.5rem;">WORLD OF FINANCE</h1>
+        <p>Advanced Stock Analysis Platform</p>
+        <p>Five-Lens Framework with Professional Risk Metrics</p>
+    </div>
+""", unsafe_allow_html=True)
+
+# Time display
+st.markdown(f"""
+    <div class="time-display">
+    📊 Last Updated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+    </div>
+""", unsafe_allow_html=True)
+
+st.markdown("---")
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SIDEBAR
@@ -100,20 +225,6 @@ st.sidebar.markdown("---")
 st.sidebar.write("**Prof. V. Ravichandran**")
 st.sidebar.write("*28+ Years Finance Experience*")
 st.sidebar.write("*10+ Years Academic Excellence*")
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# MAIN APP
-# ═══════════════════════════════════════════════════════════════════════════════
-
-# Header
-col1, col2 = st.columns([3, 1])
-with col1:
-    st.title("🏔️ THE MOUNTAIN PATH - WORLD OF FINANCE")
-    st.markdown("### Stock Analysis Platform with Advanced Risk Metrics")
-with col2:
-    st.metric("Updated", datetime.now().strftime("%H:%M:%S"))
-
-st.markdown("---")
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # MODE 1: SINGLE STOCK ANALYSIS
@@ -162,7 +273,7 @@ if analysis_mode == "Single Stock Analysis":
                 stock_data = DataFetcher.extract_stock_data(info, price_hist)
                 financial_metrics = DataFetcher.extract_financial_metrics(info)
                 
-                # ✅ FIX #1: Calculate Beta BEFORE risk metrics
+                # ✅ Calculate Beta
                 beta = DataFetcher.calculate_beta(selected_company, price_hist, market_data)
                 
                 # Calculate risk metrics
@@ -172,7 +283,7 @@ if analysis_mode == "Single Stock Analysis":
                     stock_data.get('current_price')
                 )
                 
-                # ✅ FIX #2: Add beta to risk metrics
+                # ✅ Add beta to risk metrics
                 risk_metrics['beta'] = beta
                 
                 # Evaluate using Five-Lens Framework
@@ -389,7 +500,6 @@ if analysis_mode == "Single Stock Analysis":
                         st.write(f"**Financial Health Score: {lens_scores.financial_health:.1f}/100**")
                         col_a, col_b, col_c = st.columns(3)
                         
-                        # D/E Ratio
                         with col_a:
                             de_ratio = financial_metrics.get('debt_to_equity')
                             if de_ratio is not None and not np.isnan(de_ratio):
@@ -397,7 +507,6 @@ if analysis_mode == "Single Stock Analysis":
                             else:
                                 st.metric("D/E Ratio", "N/A", help="Balance sheet data unavailable")
                         
-                        # Current Ratio
                         with col_b:
                             cr = financial_metrics.get('current_ratio')
                             if cr is not None and not np.isnan(cr):
@@ -405,7 +514,6 @@ if analysis_mode == "Single Stock Analysis":
                             else:
                                 st.metric("Current Ratio", "N/A", help="Balance sheet data unavailable")
                         
-                        # Interest Coverage
                         with col_c:
                             ic = financial_metrics.get('interest_coverage')
                             if ic is not None and not np.isnan(ic):
@@ -417,19 +525,16 @@ if analysis_mode == "Single Stock Analysis":
                         st.write(f"**Risk & Momentum Score: {lens_scores.risk_momentum:.1f}/100**")
                         col_a, col_b, col_c = st.columns(3)
                         
-                        # ✅ FIX #1 RESULT: Beta now shows real value or N/A (not error)
                         with col_a:
                             if beta is not None and not np.isnan(beta):
                                 st.metric("Beta", f"{beta:.2f}x")
                             else:
                                 st.metric("Beta", "N/A", help="Market data not available")
                         
-                        # Volatility
                         with col_b:
                             volatility = risk_metrics.get('volatility_252d', 0.25)
                             st.metric("Volatility (252d)", f"{(volatility*100):.1f}%")
                         
-                        # Sharpe Ratio
                         with col_c:
                             sharpe = risk_metrics.get('sharpe_ratio', 0.5)
                             st.metric("Sharpe Ratio", f"{sharpe:.2f}")
@@ -446,283 +551,9 @@ if analysis_mode == "Single Stock Analysis":
                 recommendation = framework.generate_recommendation(lens_scores, stock_data)
                 st.markdown(recommendation)
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# MODE 2: SECTOR COMPARISON
 # ═════════════════════════════════════════════════════════════════════════════════
-
-elif analysis_mode == "Sector Comparison":
-    
-    st.markdown("### 📊 SECTOR COMPARISON")
-    
-    registry = DataFetcher.get_nifty50_registry()
-    sectors = sorted(set(data['sector'] for data in registry.values()))
-    
-    selected_sector = st.selectbox("Select Sector:", sectors)
-    
-    sector_companies = {name: data for name, data in registry.items() 
-                       if data['sector'] == selected_sector}
-    
-    if st.button("🔍 Analyze Sector", type="primary"):
-        
-        all_results = []
-        progress_bar = st.progress(0)
-        status_text = st.empty()
-        
-        for i, (company_name, company_data) in enumerate(sector_companies.items()):
-            
-            progress = (i + 1) / len(sector_companies)
-            progress_bar.progress(progress)
-            status_text.text(f"Analyzing {company_name}... ({i+1}/{len(sector_companies)})")
-            
-            symbol = company_data['symbol']
-            price_hist, info = DataFetcher.fetch_stock_data(symbol, "1y")
-            market_data = DataFetcher.fetch_market_index("^NSEI", "1y")
-            
-            if price_hist is not None:
-                stock_data = DataFetcher.extract_stock_data(info, price_hist)
-                financial_metrics = DataFetcher.extract_financial_metrics(info)
-                
-                # ✅ FIX #3: Changed selected_stock to company_name
-                beta = DataFetcher.calculate_beta(company_name, price_hist, market_data)
-                
-                risk_metrics = RiskMetricsCalculator.calculate_all_risk_metrics(
-                    price_hist['Close'], market_data, stock_data.get('current_price')
-                )
-                risk_metrics['beta'] = beta
-                
-                framework = FiveLensFramework()
-                lens_scores = framework.evaluate_stock(stock_data, financial_metrics, risk_metrics)
-                
-                all_results.append({
-                    'Company': company_name,
-                    'Symbol': symbol,
-                    'Composite': lens_scores.composite,
-                    'Valuation': lens_scores.valuation,
-                    'Quality': lens_scores.quality,
-                    'Growth': lens_scores.growth,
-                    'Health': lens_scores.financial_health,
-                    'Risk': lens_scores.risk_momentum,
-                    'Price': stock_data.get('current_price'),
-                    'P/E': stock_data.get('pe_ratio'),
-                })
-        
-        progress_bar.empty()
-        status_text.empty()
-        
-        if all_results:
-            df_results = pd.DataFrame(all_results).sort_values('Composite', ascending=False)
-            
-            st.markdown("### Rankings by Composite Score")
-            st.dataframe(df_results, use_container_width=True)
-            
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                fig = px.bar(df_results, x='Company', y='Composite', 
-                            color='Composite', color_continuous_scale='RdYlGn',
-                            title="Composite Scores Comparison")
-                fig.update_layout(height=400)
-                st.plotly_chart(fig, use_container_width=True)
-            
-            with col2:
-                fig = go.Figure()
-                for col_name in ['Valuation', 'Quality', 'Growth', 'Health', 'Risk']:
-                    fig.add_trace(go.Box(y=df_results[col_name], name=col_name))
-                fig.update_layout(title="Score Distribution", height=400)
-                st.plotly_chart(fig, use_container_width=True)
-
-# ═════════════════════════════════════════════════════════════════════════════
-# MODE 3: PEER BENCHMARKING
-# ═════════════════════════════════════════════════════════════════════════════
-
-elif analysis_mode == "Peer Benchmarking":
-    
-    st.markdown("### 🏆 PEER BENCHMARKING")
-    
-    registry = DataFetcher.get_nifty50_registry()
-    selected_stocks = st.multiselect(
-        "Select stocks to compare:",
-        sorted(registry.keys()),
-        default=list(sorted(registry.keys()))[:3]
-    )
-    
-    if st.button("📊 Generate Benchmark Report", type="primary"):
-        
-        all_data = []
-        progress_bar = st.progress(0)
-        
-        for i, company_name in enumerate(selected_stocks):
-            
-            progress = (i + 1) / len(selected_stocks)
-            progress_bar.progress(progress)
-            
-            symbol = registry[company_name]['symbol']
-            price_hist, info = DataFetcher.fetch_stock_data(symbol, "1y")
-            market_data = DataFetcher.fetch_market_index("^NSEI", "1y")
-            
-            if price_hist is not None:
-                stock_data = DataFetcher.extract_stock_data(info, price_hist)
-                financial_metrics = DataFetcher.extract_financial_metrics(info)
-                
-                # ✅ FIX #4: Changed selected_stock to company_name
-                beta = DataFetcher.calculate_beta(company_name, price_hist, market_data)
-                
-                risk_metrics = RiskMetricsCalculator.calculate_all_risk_metrics(
-                    price_hist['Close'], market_data, stock_data.get('current_price')
-                )
-                
-                framework = FiveLensFramework()
-                lens_scores = framework.evaluate_stock(stock_data, financial_metrics, risk_metrics)
-                
-                all_data.append({
-                    'Company': company_name,
-                    'Valuation': lens_scores.valuation,
-                    'Quality': lens_scores.quality,
-                    'Growth': lens_scores.growth,
-                    'Financial Health': lens_scores.financial_health,
-                    'Risk & Momentum': lens_scores.risk_momentum,
-                    'Composite': lens_scores.composite,
-                })
-        
-        progress_bar.empty()
-        
-        if all_data:
-            df_bench = pd.DataFrame(all_data)
-            
-            fig = px.imshow(df_bench.set_index('Company')[['Valuation', 'Quality', 'Growth', 
-                                                             'Financial Health', 'Risk & Momentum']].T,
-                           color_continuous_scale='RdYlGn',
-                           text_auto='.1f',
-                           title="Peer Comparison Heatmap")
-            st.plotly_chart(fig, use_container_width=True)
-            
-            fig = go.Figure()
-            for _, row in df_bench.iterrows():
-                fig.add_trace(go.Scatterpolar(
-                    r=[row['Valuation'], row['Quality'], row['Growth'], 
-                       row['Financial Health'], row['Risk & Momentum']],
-                    theta=['Valuation', 'Quality', 'Growth', 'Financial Health', 'Risk & Momentum'],
-                    fill='toself',
-                    name=row['Company']
-                ))
-            
-            fig.update_layout(
-                polar=dict(radialaxis=dict(visible=True, range=[0, 100])),
-                title="Peer Comparison Radar",
-                height=500
-            )
-            st.plotly_chart(fig, use_container_width=True)
-            
-            st.dataframe(df_bench.sort_values('Composite', ascending=False), use_container_width=True)
-
-# ═════════════════════════════════════════════════════════════════════════════
-# MODE 4: PORTFOLIO RISK
-# ═════════════════════════════════════════════════════════════════════════════
-
-elif analysis_mode == "Portfolio Risk":
-    
-    st.markdown("### 📈 PORTFOLIO RISK ANALYSIS")
-    
-    registry = DataFetcher.get_nifty50_registry()
-    
-    col1, col2 = st.columns([3, 1])
-    with col1:
-        portfolio_stocks = st.multiselect(
-            "Select stocks for portfolio:",
-            sorted(registry.keys()),
-            default=list(sorted(registry.keys()))[:5]
-        )
-    
-    with col2:
-        if st.button("Calculate", type="primary"):
-            st.session_state.calculate_portfolio = True
-    
-    if 'calculate_portfolio' in st.session_state:
-        
-        st.markdown("**Portfolio Weights**")
-        col_names = st.columns(len(portfolio_stocks))
-        weights = {}
-        
-        for i, stock in enumerate(portfolio_stocks):
-            with col_names[i]:
-                weight = st.number_input(
-                    f"{stock}",
-                    min_value=0.0,
-                    max_value=100.0,
-                    value=100.0/len(portfolio_stocks),
-                    step=1.0
-                )
-                weights[stock] = weight / 100.0
-        
-        total_weight = sum(weights.values())
-        weights = {k: v/total_weight for k, v in weights.items()}
-        
-        if st.button("🔍 Analyze Portfolio Risk", type="primary"):
-            
-            all_prices = {}
-            progress_bar = st.progress(0)
-            
-            for i, stock in enumerate(portfolio_stocks):
-                progress = (i + 1) / len(portfolio_stocks)
-                progress_bar.progress(progress)
-                
-                symbol = registry[stock]['symbol']
-                price_hist, _ = DataFetcher.fetch_stock_data(symbol, "1y")
-                
-                if price_hist is not None:
-                    all_prices[stock] = price_hist['Close']
-            
-            progress_bar.empty()
-            
-            if all_prices:
-                st.markdown("### Portfolio Risk Metrics")
-                
-                col1, col2, col3 = st.columns(3)
-                
-                with col1:
-                    st.write("**Individual Stock Volatilities**")
-                    for stock, prices in all_prices.items():
-                        vol = RiskMetricsCalculator.calculate_volatility(prices)
-                        st.metric(stock, f"{vol*100:.1f}%")
-                
-                with col2:
-                    st.write("**Portfolio Weights**")
-                    for stock, weight in weights.items():
-                        st.metric(stock, f"{weight*100:.1f}%")
-                
-                with col3:
-                    st.write("**Price Momentum (52w)**")
-                    for stock, prices in all_prices.items():
-                        if len(prices) > 252:
-                            momentum = (prices.iloc[-1] - prices.iloc[-252]) / prices.iloc[-252]
-                            st.metric(stock, f"{momentum*100:+.1f}%")
-                
-                st.markdown("### Correlation Matrix")
-                corr_matrix = RiskMetricsCalculator.calculate_correlation_matrix(all_prices)
-                
-                fig = px.imshow(corr_matrix,
-                               color_continuous_scale='RdBu',
-                               text_auto='.2f',
-                               title="Stock Correlation Matrix",
-                               zmin=-1, zmax=1)
-                st.plotly_chart(fig, use_container_width=True)
-                
-                st.markdown("### Summary Statistics")
-                summary_data = []
-                for stock, prices in all_prices.items():
-                    summary_data.append({
-                        'Stock': stock,
-                        'Return': f"{((prices.iloc[-1] / prices.iloc[0] - 1)*100):+.1f}%",
-                        'Volatility': f"{RiskMetricsCalculator.calculate_volatility(prices)*100:.1f}%",
-                        'Max Drawdown': f"{RiskMetricsCalculator.calculate_drawdown(prices)[0]*100:.1f}%",
-                    })
-                
-                df_summary = pd.DataFrame(summary_data)
-                st.dataframe(df_summary, use_container_width=True)
-
-# ═════════════════════════════════════════════════════════════════════════════
 # FOOTER
-# ═════════════════════════════════════════════════════════════════════════════
+# ═════════════════════════════════════════════════════════════════════════════════
 
 st.markdown("---")
 st.markdown("""
