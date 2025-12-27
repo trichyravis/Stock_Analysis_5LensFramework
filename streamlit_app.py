@@ -183,23 +183,37 @@ if analysis_mode == "Single Stock Analysis":
                 col1, col2, col3, col4, col5 = st.columns(5)
                 
                 with col1:
-                    st.metric("Current Price", f"₹{stock_data.get('current_price', 'N/A'):.2f}")
+                    current_price = stock_data.get('current_price')
+                    if current_price:
+                        st.metric("Current Price", f"₹{current_price:.2f}")
+                    else:
+                        st.metric("Current Price", "N/A")
                 
                 with col2:
-                    st.metric("P/E Ratio", f"{stock_data.get('pe_ratio', 'N/A'):.1f}x" 
-                             if stock_data.get('pe_ratio') else "N/A")
+                    pe_ratio = stock_data.get('pe_ratio')
+                    if pe_ratio and not np.isnan(pe_ratio):
+                        st.metric("P/E Ratio", f"{pe_ratio:.1f}x")
+                    else:
+                        st.metric("P/E Ratio", "N/A")
                 
                 with col3:
-                    st.metric("P/B Ratio", f"{stock_data.get('pb_ratio', 'N/A'):.2f}x"
-                             if stock_data.get('pb_ratio') else "N/A")
+                    pb_ratio = stock_data.get('pb_ratio')
+                    if pb_ratio and not np.isnan(pb_ratio):
+                        st.metric("P/B Ratio", f"{pb_ratio:.2f}x")
+                    else:
+                        st.metric("P/B Ratio", "N/A")
                 
                 with col4:
-                    yield_pct = (stock_data.get('dividend_yield', 0) or 0) * 100
-                    st.metric("Div Yield", f"{yield_pct:.2f}%" if yield_pct else "N/A")
+                    div_yield = stock_data.get('dividend_yield') or 0
+                    yield_pct = div_yield * 100
+                    st.metric("Div Yield", f"{yield_pct:.2f}%")
                 
                 with col5:
-                    st.metric("Market Cap", f"₹{(stock_data.get('market_cap', 0) or 0)/1e9:.1f}B" 
-                             if stock_data.get('market_cap') else "N/A")
+                    market_cap = stock_data.get('market_cap')
+                    if market_cap:
+                        st.metric("Market Cap", f"₹{market_cap/1e9:.1f}B")
+                    else:
+                        st.metric("Market Cap", "N/A")
                 
                 st.markdown("---")
                 
@@ -310,39 +324,58 @@ if analysis_mode == "Single Stock Analysis":
                     st.write(f"**Valuation Score: {lens_scores.valuation:.1f}/100**")
                     col1, col2, col3, col4 = st.columns(4)
                     with col1:
-                        st.metric("P/E Ratio", f"{stock_data.get('pe_ratio', 'N/A'):.1f}x"
-                                 if stock_data.get('pe_ratio') else "N/A")
+                        pe_ratio = stock_data.get('pe_ratio')
+                        if pe_ratio and not np.isnan(pe_ratio):
+                            st.metric("P/E Ratio", f"{pe_ratio:.1f}x")
+                        else:
+                            st.metric("P/E Ratio", "N/A")
                     with col2:
-                        st.metric("P/B Ratio", f"{stock_data.get('pb_ratio', 'N/A'):.2f}x"
-                                 if stock_data.get('pb_ratio') else "N/A")
+                        pb_ratio = stock_data.get('pb_ratio')
+                        if pb_ratio and not np.isnan(pb_ratio):
+                            st.metric("P/B Ratio", f"{pb_ratio:.2f}x")
+                        else:
+                            st.metric("P/B Ratio", "N/A")
                     with col3:
-                        st.metric("P/S Ratio", f"{stock_data.get('ps_ratio', 'N/A'):.2f}x"
-                                 if stock_data.get('ps_ratio') else "N/A")
+                        ps_ratio = stock_data.get('ps_ratio')
+                        if ps_ratio and not np.isnan(ps_ratio):
+                            st.metric("P/S Ratio", f"{ps_ratio:.2f}x")
+                        else:
+                            st.metric("P/S Ratio", "N/A")
                     with col4:
-                        st.metric("Div Yield", f"{((stock_data.get('dividend_yield', 0) or 0)*100):.2f}%")
+                        div_yield = stock_data.get('dividend_yield') or 0
+                        st.metric("Div Yield", f"{(div_yield*100):.2f}%")
                 
                 with tab2:
                     st.write(f"**Quality Score: {lens_scores.quality:.1f}/100**")
                     col1, col2, col3, col4 = st.columns(4)
                     with col1:
-                        st.metric("ROE", f"{((financial_metrics.get('roe', 0) or 0)*100):.1f}%")
+                        roe = financial_metrics.get('roe') or 0
+                        st.metric("ROE", f"{(roe*100):.1f}%")
                     with col2:
-                        st.metric("NPM", f"{((financial_metrics.get('npm', 0) or 0)*100):.1f}%")
+                        npm = financial_metrics.get('npm') or 0
+                        st.metric("NPM", f"{(npm*100):.1f}%")
                     with col3:
-                        st.metric("ROA", f"{((financial_metrics.get('roa', 0) or 0)*100):.1f}%")
+                        roa = financial_metrics.get('roa') or 0
+                        st.metric("ROA", f"{(roa*100):.1f}%")
                     with col4:
-                        st.metric("ROIC", f"{((financial_metrics.get('roic', 0) or 0)*100):.1f}%")
+                        roic = financial_metrics.get('roic') or 0
+                        st.metric("ROIC", f"{(roic*100):.1f}%")
                 
                 with tab3:
                     st.write(f"**Growth Score: {lens_scores.growth:.1f}/100**")
                     col1, col2, col3 = st.columns(3)
                     with col1:
-                        st.metric("Revenue Growth", f"{((financial_metrics.get('revenue_growth_yoy', 0) or 0)*100):.1f}%")
+                        rev_growth = financial_metrics.get('revenue_growth_yoy') or 0
+                        st.metric("Revenue Growth", f"{(rev_growth*100):.1f}%")
                     with col2:
-                        st.metric("Earnings Growth", f"{((financial_metrics.get('earnings_growth_yoy', 0) or 0)*100):.1f}%")
+                        earnings_growth = financial_metrics.get('earnings_growth_yoy') or 0
+                        st.metric("Earnings Growth", f"{(earnings_growth*100):.1f}%")
                     with col3:
-                        st.metric("PEG Ratio", f"{financial_metrics.get('peg_ratio', 'N/A'):.2f}"
-                                 if financial_metrics.get('peg_ratio') else "N/A")
+                        peg = financial_metrics.get('peg_ratio')
+                        if peg and not np.isnan(peg):
+                            st.metric("PEG Ratio", f"{peg:.2f}")
+                        else:
+                            st.metric("PEG Ratio", "N/A")
                 
                 with tab4:
                     col1, col2 = st.columns(2)
@@ -350,43 +383,51 @@ if analysis_mode == "Single Stock Analysis":
                         st.write(f"**Financial Health Score: {lens_scores.financial_health:.1f}/100**")
                         col_a, col_b, col_c = st.columns(3)
                         
-                        # D/E Ratio - IMPROVED
+                        # D/E Ratio
                         with col_a:
                             de_ratio = financial_metrics.get('debt_to_equity')
-                            if de_ratio is not None:
+                            if de_ratio is not None and not np.isnan(de_ratio):
                                 st.metric("D/E Ratio", f"{de_ratio:.2f}")
                             else:
-                                st.metric("D/E Ratio", "N/A", help="Balance sheet data unavailable for this stock")
+                                st.metric("D/E Ratio", "N/A", help="Balance sheet data unavailable")
                         
-                        # Current Ratio - IMPROVED
+                        # Current Ratio
                         with col_b:
                             cr = financial_metrics.get('current_ratio')
-                            if cr is not None:
+                            if cr is not None and not np.isnan(cr):
                                 st.metric("Current Ratio", f"{cr:.2f}")
                             else:
-                                st.metric("Current Ratio", "N/A", help="Balance sheet data unavailable for this stock")
+                                st.metric("Current Ratio", "N/A", help="Balance sheet data unavailable")
                         
-                        # Interest Coverage - IMPROVED
+                        # Interest Coverage
                         with col_c:
                             ic = financial_metrics.get('interest_coverage')
-                            if ic is not None:
+                            if ic is not None and not np.isnan(ic):
                                 st.metric("Interest Coverage", f"{ic:.2f}x")
                             else:
-                                st.metric("Interest Coverage", "N/A", help="Financial statement data unavailable for this stock")
+                                st.metric("Interest Coverage", "N/A", help="Financial data unavailable")
                     
                     with col2:
                         st.write(f"**Risk & Momentum Score: {lens_scores.risk_momentum:.1f}/100**")
                         col_a, col_b, col_c = st.columns(3)
+                        
+                        # BETA - FIXED (No default to 1.0)
                         with col_a:
                             beta = risk_metrics.get('beta')
-                            if beta is not None:
+                            if beta is not None and not np.isnan(beta):
                                 st.metric("Beta", f"{beta:.2f}x")
                             else:
-                                st.metric("Beta", "N/A", help="Market data not available for Beta calculation")
+                                st.metric("Beta", "N/A", help="Market data not available")
+                        
+                        # Volatility
                         with col_b:
-                            st.metric("Volatility (252d)", f"{(risk_metrics.get('volatility_252d', 0.25)*100):.1f}%")
+                            volatility = risk_metrics.get('volatility_252d', 0.25)
+                            st.metric("Volatility (252d)", f"{(volatility*100):.1f}%")
+                        
+                        # Sharpe Ratio
                         with col_c:
-                            st.metric("Sharpe Ratio", f"{risk_metrics.get('sharpe_ratio', 0.5):.2f}")
+                            sharpe = risk_metrics.get('sharpe_ratio', 0.5)
+                            st.metric("Sharpe Ratio", f"{sharpe:.2f}")
                 
                 st.markdown("---")
                 
@@ -461,11 +502,9 @@ elif analysis_mode == "Sector Comparison":
         if all_results:
             df_results = pd.DataFrame(all_results).sort_values('Composite', ascending=False)
             
-            # Display table
             st.markdown("### Rankings by Composite Score")
             st.dataframe(df_results, use_container_width=True)
             
-            # Visualization
             col1, col2 = st.columns(2)
             
             with col1:
@@ -477,8 +516,8 @@ elif analysis_mode == "Sector Comparison":
             
             with col2:
                 fig = go.Figure()
-                for col in ['Valuation', 'Quality', 'Growth', 'Health', 'Risk']:
-                    fig.add_trace(go.Box(y=df_results[col], name=col))
+                for col_name in ['Valuation', 'Quality', 'Growth', 'Health', 'Risk']:
+                    fig.add_trace(go.Box(y=df_results[col_name], name=col_name))
                 fig.update_layout(title="Score Distribution", height=400)
                 st.plotly_chart(fig, use_container_width=True)
 
@@ -536,7 +575,6 @@ elif analysis_mode == "Peer Benchmarking":
         if all_data:
             df_bench = pd.DataFrame(all_data)
             
-            # Heatmap
             fig = px.imshow(df_bench.set_index('Company')[['Valuation', 'Quality', 'Growth', 
                                                              'Financial Health', 'Risk & Momentum']].T,
                            color_continuous_scale='RdYlGn',
@@ -544,7 +582,6 @@ elif analysis_mode == "Peer Benchmarking":
                            title="Peer Comparison Heatmap")
             st.plotly_chart(fig, use_container_width=True)
             
-            # Radar comparison
             fig = go.Figure()
             for _, row in df_bench.iterrows():
                 fig.add_trace(go.Scatterpolar(
@@ -562,7 +599,6 @@ elif analysis_mode == "Peer Benchmarking":
             )
             st.plotly_chart(fig, use_container_width=True)
             
-            # Table
             st.dataframe(df_bench.sort_values('Composite', ascending=False), use_container_width=True)
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -589,7 +625,6 @@ elif analysis_mode == "Portfolio Risk":
     
     if 'calculate_portfolio' in st.session_state:
         
-        # Get weights
         st.markdown("**Portfolio Weights**")
         col_names = st.columns(len(portfolio_stocks))
         weights = {}
@@ -605,7 +640,6 @@ elif analysis_mode == "Portfolio Risk":
                 )
                 weights[stock] = weight / 100.0
         
-        # Normalize
         total_weight = sum(weights.values())
         weights = {k: v/total_weight for k, v in weights.items()}
         
@@ -627,10 +661,8 @@ elif analysis_mode == "Portfolio Risk":
             progress_bar.empty()
             
             if all_prices:
-                # Calculate portfolio metrics
                 st.markdown("### Portfolio Risk Metrics")
                 
-                # Individual volatilities
                 col1, col2, col3 = st.columns(3)
                 
                 with col1:
@@ -651,7 +683,6 @@ elif analysis_mode == "Portfolio Risk":
                             momentum = (prices.iloc[-1] - prices.iloc[-252]) / prices.iloc[-252]
                             st.metric(stock, f"{momentum*100:+.1f}%")
                 
-                # Correlation matrix
                 st.markdown("### Correlation Matrix")
                 corr_matrix = RiskMetricsCalculator.calculate_correlation_matrix(all_prices)
                 
@@ -662,7 +693,6 @@ elif analysis_mode == "Portfolio Risk":
                                zmin=-1, zmax=1)
                 st.plotly_chart(fig, use_container_width=True)
                 
-                # Summary statistics
                 st.markdown("### Summary Statistics")
                 summary_data = []
                 for stock, prices in all_prices.items():
