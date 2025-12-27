@@ -27,7 +27,6 @@ class DataFetcher:
         'GAIL': {'symbol': 'GAIL.NS', 'sector': 'Oil & Gas'},
         'GRASIM': {'symbol': 'GRASIM.NS', 'sector': 'Chemicals'},
         'HCLTECH': {'symbol': 'HCLTECH.NS', 'sector': 'IT'},
-        'HDFC': {'symbol': 'HDFC.NS', 'sector': 'Financial Services'},
         'HDFCBANK': {'symbol': 'HDFCBANK.NS', 'sector': 'Banks'},
         'HEROMOTOCO': {'symbol': 'HEROMOTOCO.NS', 'sector': 'Automobiles'},
         'HINDALCO': {'symbol': 'HINDALCO.NS', 'sector': 'Metals & Mining'},
