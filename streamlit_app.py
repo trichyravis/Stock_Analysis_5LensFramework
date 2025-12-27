@@ -94,6 +94,68 @@ st.markdown("""
         50% { transform: translateY(-25px); }
     }
     
+    /* SIDEBAR STYLING - CONTRASTING DARK BACKGROUND WITH WHITE TEXT */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(135deg, #003366 0%, #004d80 50%, #003366 100%) !important;
+    }
+    
+    [data-testid="stSidebar"] [data-testid="stVerticalBlock"] > div:has(> label) {
+        background-color: transparent;
+    }
+    
+    /* Sidebar text - white */
+    [data-testid="stSidebar"] * {
+        color: white !important;
+    }
+    
+    /* Sidebar headers */
+    [data-testid="stSidebar"] h2,
+    [data-testid="stSidebar"] h3,
+    [data-testid="stSidebar"] .stMarkdown h1,
+    [data-testid="stSidebar"] .stMarkdown h2,
+    [data-testid="stSidebar"] .stMarkdown h3 {
+        color: white !important;
+        font-weight: 700 !important;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+    }
+    
+    /* Sidebar paragraphs and text */
+    [data-testid="stSidebar"] p,
+    [data-testid="stSidebar"] span,
+    [data-testid="stSidebar"] div {
+        color: white !important;
+    }
+    
+    /* Sidebar radio buttons - improved contrast */
+    [data-testid="stSidebar"] [role="radio"] {
+        accent-color: #FFD700 !important;
+    }
+    
+    [data-testid="stSidebar"] .stRadio > label {
+        color: white !important;
+        font-weight: 500;
+    }
+    
+    /* Sidebar dividers - white with opacity */
+    [data-testid="stSidebar"] hr {
+        border-color: rgba(255, 255, 255, 0.3) !important;
+    }
+    
+    /* Sidebar links */
+    [data-testid="stSidebar"] a {
+        color: #FFD700 !important;
+    }
+    
+    [data-testid="stSidebar"] a:hover {
+        color: #FFF9E6 !important;
+        text-decoration: underline;
+    }
+    
+    /* Sidebar markdown containers */
+    [data-testid="stSidebar"] .stMarkdown {
+        color: white !important;
+    }
+    
     .time-display {
         text-align: center;
         color: #666;
