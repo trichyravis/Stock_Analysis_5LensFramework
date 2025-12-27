@@ -166,6 +166,98 @@ class DataFetcher:
         return None
     
     @staticmethod
+    def calculate_beta(
+        symbol: str,
+        period: str = "1y",
+        index_symbol: str = "^NSEI"
+    ) -> Optional[float]:
+        """
+        Calculate stock beta relative to market index.
+        
+        Beta measures systematic risk - how much the stock moves relative to market.
+        Beta = 1.0 means stock moves with market
+        Beta > 1.0 means stock is more volatile than market
+        Beta < 1.0 means stock is less volatile than market
+        
+        Args:
+            symbol: Stock symbol (e.g., 'INFY.NS')
+            period: Time period (e.g., '6mo', '1y', '2y', '5y')
+            index_symbol: Market index ticker (default: '^NSEI' for Nifty 50)
+        
+        Returns:
+            Beta value (float) or None if cannot be computed
+            
+        Example:
+            beta = DataFetcher.calculate_beta('INFY.NS', '1y', '^NSEI')
+            if beta is not None:
+                print(f"Beta: {beta}x")
+            else:
+                print("Beta unavailable")
+        """
+        try:
+            print(f"\n[Beta] [{symbol}] Calculating beta for {period}...")
+            
+            # Fetch stock data
+            print(f"[Beta] [{symbol}] Fetching stock data...")
+            stock_ticker = yf.Ticker(symbol)
+            stock_data = stock_ticker.history(period=period)
+            if stock_data is None or stock_data.empty:
+                print(f"[Beta] [{symbol}] ❌ No stock data")
+                return None
+            
+            # Fetch market index data (with retry logic)
+            print(f"[Beta] [{symbol}] Fetching market index data ({index_symbol})...")
+            market_data = DataFetcher.fetch_market_index(index_symbol, period)
+            if market_data is None or market_data.empty:
+                print(f"[Beta] [{symbol}] ❌ No market index data")
+                return None
+            
+            # Extract prices
+            stock_prices = stock_data['Close']
+            market_prices = market_data['Close']
+            
+            # Compute daily returns
+            stock_returns = stock_prices.pct_change()
+            market_returns = market_prices.pct_change()
+            
+            # Align dates and combine
+            returns = pd.concat([stock_returns, market_returns], axis=1, join="inner")
+            returns.columns = ['stock', 'market']
+            returns.dropna(inplace=True)
+            
+            # Validate data points
+            if len(returns) < 30:
+                print(f"[Beta] [{symbol}] ❌ Insufficient data ({len(returns)} points, need 30+)")
+                return None
+            
+            print(f"[Beta] [{symbol}] Computing beta ({len(returns)} aligned data points)...")
+            
+            # Beta = Cov(stock, market) / Var(market)
+            cov = np.cov(returns['stock'], returns['market'])[0, 1]
+            var = np.var(returns['market'])
+            
+            if var == 0:
+                print(f"[Beta] [{symbol}] ❌ Market variance is zero")
+                return None
+            
+            beta = cov / var
+            beta_rounded = round(beta, 4)
+            
+            # Check for reasonable beta value
+            if np.isnan(beta_rounded) or np.isinf(beta_rounded):
+                print(f"[Beta] [{symbol}] ❌ Invalid beta value")
+                return None
+            
+            print(f"[Beta] [{symbol}] ✅ SUCCESS! Beta = {beta_rounded}")
+            return beta_rounded
+            
+        except Exception as e:
+            error_type = type(e).__name__
+            error_msg = str(e)[:80]
+            print(f"[Beta] [{symbol}] ❌ Error ({error_type}): {error_msg}")
+            return None
+    
+    @staticmethod
     def extract_stock_data(info: Dict, price_hist: pd.DataFrame) -> Dict:
         """
         Extract key stock data
