@@ -74,7 +74,7 @@ st.markdown("""
 # Display profile photo from GitHub
 github_username = "trichyravis"
 repo_name = "Stock_Analysis_5LensFramework"
-image_url = f"https://raw.githubusercontent.com/trichyravis/Stock_Analysis_5LensFramework/main/Ravi_Profile_Photo.jpeg"
+image_url = f"https://raw.githubusercontent.com/trichyravis/Stock_Analysis_5LensFramework/main/Ravi_Profile_Photo 2.jpeg"
 
 try:
     st.sidebar.image(image_url, use_column_width=True)
