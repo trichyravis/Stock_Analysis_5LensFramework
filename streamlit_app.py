@@ -270,7 +270,6 @@ nifty50_companies = {
     "Axis Bank": {"symbol": "AXISBANK.NS", "sector": "Banking", "pe": 19.5, "price": 1050, "pb": 2.2, "ps": 4.2, "beta": 0.96},
     "Kotak Mahindra Bank": {"symbol": "KOTAKBANK.NS", "sector": "Banking", "pe": 18.2, "price": 1850, "pb": 2.0, "ps": 5.1, "beta": 0.89},
     "State Bank of India": {"symbol": "SBIN.NS", "sector": "Banking", "pe": 14.5, "price": 550, "pb": 1.1, "ps": 3.2, "beta": 0.87},
-    "HDFC": {"symbol": "HDFC.NS", "sector": "Finance", "pe": 17.8, "price": 2750, "pb": 1.9, "ps": 4.5, "beta": 0.94},
     "ICICI Prudential": {"symbol": "ICICIPRULI.NS", "sector": "Finance", "pe": 21.2, "price": 620, "pb": 3.1, "ps": 2.8, "beta": 1.02},
     "Bajaj Auto": {"symbol": "BAJAJAUT.NS", "sector": "Auto", "pe": 16.8, "price": 9200, "pb": 2.1, "ps": 1.2, "beta": 1.12},
     "Hero MotoCorp": {"symbol": "HEROMOTOCO.NS", "sector": "Auto", "pe": 14.2, "price": 4280, "pb": 1.5, "ps": 0.8, "beta": 1.18},
