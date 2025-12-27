@@ -37,21 +37,23 @@ st.markdown("""
         padding: 0rem 1rem;
     }
     
-    /* HERO HEADER */
+    /* HERO HEADER - COMPACT DESIGN */
     .hero-title {
         background: linear-gradient(135deg, #003366 0%, #004d80 50%, #003366 100%);
-        padding: 3rem 2rem;
+        padding: 2rem 2rem;
         border-radius: 20px;
-        margin: 0rem 0rem 2rem 0rem;
+        margin: 0rem auto 2rem auto;
         box-shadow: 0 12px 30px rgba(0, 51, 102, 0.4);
         border: 4px solid #003366;
         display: flex;
         align-items: center;
-        gap: 3rem;
+        gap: 2rem;
+        max-width: 1200px;
+        width: 90%;
     }
     
     .mountain-emoji {
-        font-size: 120px;
+        font-size: 100px;
         flex-shrink: 0;
         animation: float 3s ease-in-out infinite;
         text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
@@ -63,27 +65,27 @@ st.markdown("""
     }
     
     .hero-text-right h1 {
-        font-size: 48px;
+        font-size: 32px;
         font-weight: 900;
         color: white;
-        margin: 0.3rem 0;
-        text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.5);
-        letter-spacing: 3px;
-        line-height: 1.2;
+        margin: 0.1rem 0;
+        text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+        letter-spacing: 2px;
+        line-height: 1.1;
     }
     
     .hero-text-right p:first-of-type {
-        font-size: 20px;
+        font-size: 24px;
         color: #E0F0FF;
-        margin: 1rem 0;
-        font-weight: 500;
-        letter-spacing: 1px;
+        margin: 0.8rem 0 0.3rem 0;
+        font-weight: 600;
+        letter-spacing: 0.5px;
     }
     
     .hero-text-right p:last-of-type {
-        font-size: 16px;
-        color: #E0F0FF;
-        margin: 0.5rem 0;
+        font-size: 14px;
+        color: #D0E8FF;
+        margin: 0.3rem 0 0;
         font-weight: 400;
     }
     
@@ -134,12 +136,15 @@ st.markdown("""
         .hero-title {
             flex-direction: column;
             text-align: center;
-            padding: 2rem 1.5rem;
-            gap: 1.5rem;
+            padding: 1.5rem 1.5rem;
+            gap: 1rem;
+            margin: 0.5rem auto;
+            max-width: 95%;
         }
         
         .mountain-emoji {
-            font-size: 100px;
+            font-size: 80px;
+            margin: 0;
         }
         
         .hero-text-right {
@@ -147,7 +152,35 @@ st.markdown("""
         }
         
         .hero-text-right h1 {
-            font-size: 42px;
+            font-size: 24px;
+            letter-spacing: 1px;
+        }
+        
+        .hero-text-right p:first-of-type {
+            font-size: 18px;
+        }
+        
+        .hero-text-right p:last-of-type {
+            font-size: 12px;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .hero-title {
+            padding: 1rem;
+            max-width: 100%;
+        }
+        
+        .mountain-emoji {
+            font-size: 70px;
+        }
+        
+        .hero-text-right h1 {
+            font-size: 20px;
+        }
+        
+        .hero-text-right p:first-of-type {
+            font-size: 16px;
         }
     }
     
@@ -169,8 +202,7 @@ st.markdown("""
     <div class="hero-title">
         <div class="mountain-emoji">🏔️</div>
         <div class="hero-text-right">
-            <h1>THE MOUNTAIN PATH</h1>
-            <h1>WORLD OF FINANCE</h1>
+            <h1>THE MOUNTAIN PATH • WORLD OF FINANCE</h1>
             <p>Stock Analysis Platform Using Five Lens Framework</p>
             <p>Valuation (20%) • Quality (25%) • Growth (20%) • Financial Health (20%) • Risk & Momentum (15%)</p>
         </div>
