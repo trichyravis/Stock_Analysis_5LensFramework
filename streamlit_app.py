@@ -174,7 +174,7 @@ if analysis_mode == "Single Stock Analysis":
                 lens_scores = framework.evaluate_stock(stock_data, financial_metrics, risk_metrics)
                 
                 # ═════════════════════════════════════════════════════════════
-                # DISPLAY RESULTS
+                # DISPLAY RESULTS *
                 # ═════════════════════════════════════════════════════════════
                 
                 st.markdown(f"## {selected_company} ({symbol})")
