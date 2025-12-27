@@ -349,15 +349,30 @@ if analysis_mode == "Single Stock Analysis":
                     with col1:
                         st.write(f"**Financial Health Score: {lens_scores.financial_health:.1f}/100**")
                         col_a, col_b, col_c = st.columns(3)
+                        
+                        # D/E Ratio - IMPROVED
                         with col_a:
-                            st.metric("D/E Ratio", f"{financial_metrics.get('debt_to_equity', 'N/A'):.2f}"
-                                     if financial_metrics.get('debt_to_equity') else "N/A")
+                            de_ratio = financial_metrics.get('debt_to_equity')
+                            if de_ratio is not None:
+                                st.metric("D/E Ratio", f"{de_ratio:.2f}")
+                            else:
+                                st.metric("D/E Ratio", "N/A", help="Balance sheet data unavailable for this stock")
+                        
+                        # Current Ratio - IMPROVED
                         with col_b:
-                            st.metric("Current Ratio", f"{financial_metrics.get('current_ratio', 'N/A'):.2f}"
-                                     if financial_metrics.get('current_ratio') else "N/A")
+                            cr = financial_metrics.get('current_ratio')
+                            if cr is not None:
+                                st.metric("Current Ratio", f"{cr:.2f}")
+                            else:
+                                st.metric("Current Ratio", "N/A", help="Balance sheet data unavailable for this stock")
+                        
+                        # Interest Coverage - IMPROVED
                         with col_c:
-                            st.metric("Interest Coverage", f"{financial_metrics.get('interest_coverage', 'N/A'):.2f}x"
-                                     if financial_metrics.get('interest_coverage') else "N/A")
+                            ic = financial_metrics.get('interest_coverage')
+                            if ic is not None:
+                                st.metric("Interest Coverage", f"{ic:.2f}x")
+                            else:
+                                st.metric("Interest Coverage", "N/A", help="Financial statement data unavailable for this stock")
                     
                     with col2:
                         st.write(f"**Risk & Momentum Score: {lens_scores.risk_momentum:.1f}/100**")
