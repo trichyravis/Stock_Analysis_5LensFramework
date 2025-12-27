@@ -415,7 +415,7 @@ if analysis_mode == "Single Stock Analysis":
                         with col_a:
                             beta = risk_metrics.get('beta')
                             if beta is not None and not np.isnan(beta):
-                                st.metric("Beta", f"{beta:.2f}x")
+                                st.metric("Beta", f"{risk_metrics.get('beta', 1.0):.2f}x")
                             else:
                                 st.metric("Beta", "N/A", help="Market data not available")
                         
