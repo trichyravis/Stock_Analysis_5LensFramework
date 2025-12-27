@@ -5,6 +5,8 @@ import numpy as np
 from datetime import datetime, timedelta
 import requests
 from typing import Dict, Tuple, Optional
+import time
+import random
 
 class DataFetcher:
     """Fetch and process stock data from yfinance"""
@@ -99,6 +101,7 @@ class DataFetcher:
     def fetch_market_index(index_symbol: str = "^NSEI", period: str = "1y") -> Optional[pd.DataFrame]:
         """
         Fetch market index data (Nifty 50)
+        With retry logic, timeout, and fallback tickers
         
         Args:
             index_symbol: Index symbol (default: ^NSEI for NSE)
@@ -107,13 +110,60 @@ class DataFetcher:
         Returns:
             Price history DataFrame
         """
-        try:
-            index = yf.Ticker(index_symbol)
-            market_data = index.history(period=period)
-            return market_data if not market_data.empty else None
-        except Exception as e:
-            print(f"Error fetching market index: {e}")
-            return None
+        # Try multiple tickers for better reliability
+        tickers_to_try = [
+            "^NSEI",           # Primary: Nifty 50 (NSE)
+            "^BSESN",          # Fallback 1: BSE Sensex
+            "NIFTYBEES.NS"     # Fallback 2: Nifty ETF
+        ]
+        
+        for ticker in tickers_to_try:
+            max_retries = 3
+            
+            for attempt in range(max_retries):
+                try:
+                    print(f"\n[Market Data] [{ticker}] Fetch attempt {attempt + 1}/{max_retries}")
+                    
+                    index = yf.Ticker(ticker)
+                    market_data = index.history(period=period)
+                    
+                    # Validate data
+                    if market_data is None:
+                        print(f"[Market Data] [{ticker}] ❌ No data returned (None)")
+                        if attempt < max_retries - 1:
+                            wait_time = random.uniform(2, 5)
+                            print(f"[Market Data] [{ticker}] Waiting {wait_time:.1f}s before retry...")
+                            time.sleep(wait_time)
+                        continue
+                    
+                    if market_data.empty:
+                        print(f"[Market Data] [{ticker}] ❌ Empty dataframe")
+                        if attempt < max_retries - 1:
+                            wait_time = random.uniform(2, 5)
+                            print(f"[Market Data] [{ticker}] Waiting {wait_time:.1f}s before retry...")
+                            time.sleep(wait_time)
+                        continue
+                    
+                    # Success!
+                    print(f"[Market Data] [{ticker}] ✅ SUCCESS! Got {len(market_data)} rows")
+                    return market_data
+                    
+                except Exception as e:
+                    error_type = type(e).__name__
+                    error_msg = str(e)[:80]  # First 80 chars of error
+                    print(f"[Market Data] [{ticker}] ❌ Error ({error_type}): {error_msg}")
+                    
+                    if attempt < max_retries - 1:
+                        wait_time = random.uniform(3, 7)
+                        print(f"[Market Data] [{ticker}] Waiting {wait_time:.1f}s before retry...")
+                        time.sleep(wait_time)
+                    else:
+                        print(f"[Market Data] [{ticker}] Failed after {max_retries} attempts")
+            
+            print(f"[Market Data] [{ticker}] ⚠️ Gave up on this ticker, trying next...\n")
+        
+        print("[Market Data] ⚠️ Could not fetch any market index data - Beta will be N/A")
+        return None
     
     @staticmethod
     def extract_stock_data(info: Dict, price_hist: pd.DataFrame) -> Dict:
