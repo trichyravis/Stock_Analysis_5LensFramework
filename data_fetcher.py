@@ -81,16 +81,12 @@ class DataFetcher:
         """
         try:
             ticker = yf.Ticker(symbol)
-            
-            # Fetch historical data
             price_hist = ticker.history(period=period)
             
             if price_hist.empty:
                 return None, {}
             
-            # Fetch info
             info = ticker.info
-            
             return price_hist, info
         
         except Exception as e:
@@ -100,21 +96,19 @@ class DataFetcher:
     @staticmethod
     def fetch_market_index(index_symbol: str = "^NSEI", period: str = "1y") -> Optional[pd.DataFrame]:
         """
-        Fetch market index data (Nifty 50)
-        With retry logic, timeout, and fallback tickers
+        Fetch market index data (Nifty 50) with retry logic
         
         Args:
             index_symbol: Index symbol (default: ^NSEI for NSE)
             period: Time period
         
         Returns:
-            Price history DataFrame
+            Price history DataFrame or None
         """
-        # Try multiple tickers for better reliability
         tickers_to_try = [
-            "^NSEI",           # Primary: Nifty 50 (NSE)
-            "^BSESN",          # Fallback 1: BSE Sensex
-            "NIFTYBEES.NS"     # Fallback 2: Nifty ETF
+            "^NSEI",           # Nifty 50 (primary)
+            "^BSESN",          # BSE Sensex (fallback)
+            "NIFTYBEES.NS"     # Nifty ETF (fallback)
         ]
         
         for ticker in tickers_to_try:
@@ -122,132 +116,120 @@ class DataFetcher:
             
             for attempt in range(max_retries):
                 try:
-                    print(f"\n[Market Data] [{ticker}] Fetch attempt {attempt + 1}/{max_retries}")
+                    print(f"[Market Index] [{ticker}] Fetch attempt {attempt + 1}/{max_retries}")
                     
                     index = yf.Ticker(ticker)
                     market_data = index.history(period=period)
                     
-                    # Validate data
-                    if market_data is None:
-                        print(f"[Market Data] [{ticker}] ❌ No data returned (None)")
-                        if attempt < max_retries - 1:
-                            wait_time = random.uniform(2, 5)
-                            print(f"[Market Data] [{ticker}] Waiting {wait_time:.1f}s before retry...")
-                            time.sleep(wait_time)
-                        continue
+                    if market_data is not None and not market_data.empty:
+                        print(f"[Market Index] [{ticker}] ✅ SUCCESS! Got {len(market_data)} rows")
+                        return market_data
                     
-                    if market_data.empty:
-                        print(f"[Market Data] [{ticker}] ❌ Empty dataframe")
-                        if attempt < max_retries - 1:
-                            wait_time = random.uniform(2, 5)
-                            print(f"[Market Data] [{ticker}] Waiting {wait_time:.1f}s before retry...")
-                            time.sleep(wait_time)
-                        continue
-                    
-                    # Success!
-                    print(f"[Market Data] [{ticker}] ✅ SUCCESS! Got {len(market_data)} rows")
-                    return market_data
-                    
-                except Exception as e:
-                    error_type = type(e).__name__
-                    error_msg = str(e)[:80]  # First 80 chars of error
-                    print(f"[Market Data] [{ticker}] ❌ Error ({error_type}): {error_msg}")
-                    
+                    print(f"[Market Index] [{ticker}] Empty or None data")
                     if attempt < max_retries - 1:
-                        wait_time = random.uniform(3, 7)
-                        print(f"[Market Data] [{ticker}] Waiting {wait_time:.1f}s before retry...")
-                        time.sleep(wait_time)
-                    else:
-                        print(f"[Market Data] [{ticker}] Failed after {max_retries} attempts")
+                        time.sleep(random.uniform(2, 5))
+                        
+                except Exception as e:
+                    print(f"[Market Index] [{ticker}] Error ({type(e).__name__}): {str(e)[:50]}")
+                    if attempt < max_retries - 1:
+                        time.sleep(random.uniform(3, 7))
             
-            print(f"[Market Data] [{ticker}] ⚠️ Gave up on this ticker, trying next...\n")
+            print(f"[Market Index] [{ticker}] Failed after {max_retries} attempts\n")
         
-        print("[Market Data] ⚠️ Could not fetch any market index data - Beta will be N/A")
+        print("[Market Index] ⚠️ Could not fetch market index from any source")
         return None
     
     @staticmethod
     def calculate_beta(
         symbol: str,
-        period: str = "1y",
-        index_symbol: str = "^NSEI"
+        stock_data: pd.DataFrame,
+        market_data: pd.DataFrame
     ) -> Optional[float]:
         """
-        Calculate stock beta relative to market index.
+        Calculate stock beta relative to market index with robust data alignment.
         
-        Beta measures systematic risk - how much the stock moves relative to market.
-        Beta = 1.0 means stock moves with market
-        Beta > 1.0 means stock is more volatile than market
-        Beta < 1.0 means stock is less volatile than market
+        KEY FIX: Strip timezones before alignment to handle timezone mismatches
+        between stock and market index data.
         
         Args:
-            symbol: Stock symbol (e.g., 'INFY.NS')
-            period: Time period (e.g., '6mo', '1y', '2y', '5y')
-            index_symbol: Market index ticker (default: '^NSEI' for Nifty 50)
+            symbol: Stock symbol for logging
+            stock_data: Pre-fetched historical price data for the stock
+            market_data: Pre-fetched historical price data for the index (Nifty 50)
         
         Returns:
-            Beta value (float) or None if cannot be computed
+            Beta value (float) or None if calculation fails
+            
+        Beta Interpretation:
+            β > 1.0:  Stock is more volatile than market (higher risk)
+            β = 1.0:  Stock moves with the market
+            β < 1.0:  Stock is less volatile than market (lower risk)
             
         Example:
-            beta = DataFetcher.calculate_beta('INFY.NS', '1y', '^NSEI')
-            if beta is not None:
-                print(f"Beta: {beta}x")
-            else:
-                print("Beta unavailable")
+            TCS: β ≈ 1.15 (IT sector, higher volatility)
+            HDFCBANK: β ≈ 0.95 (Banks, market-like)
+            NESTLEIND: β ≈ 0.75 (FMCG, defensive)
         """
         try:
-            print(f"\n[Beta] [{symbol}] Calculating beta for {period}...")
-            
-            # Fetch stock data
-            print(f"[Beta] [{symbol}] Fetching stock data...")
-            stock_ticker = yf.Ticker(symbol)
-            stock_data = stock_ticker.history(period=period)
-            if stock_data is None or stock_data.empty:
-                print(f"[Beta] [{symbol}] ❌ No stock data")
+            # Validate inputs
+            if stock_data is None or market_data is None:
+                print(f"[Beta] [{symbol}] ❌ None input (stock_data or market_data)")
                 return None
             
-            # Fetch market index data (with retry logic)
-            print(f"[Beta] [{symbol}] Fetching market index data ({index_symbol})...")
-            market_data = DataFetcher.fetch_market_index(index_symbol, period)
-            if market_data is None or market_data.empty:
-                print(f"[Beta] [{symbol}] ❌ No market index data")
+            if stock_data.empty or market_data.empty:
+                print(f"[Beta] [{symbol}] ❌ Empty input (stock_data or market_data)")
                 return None
             
-            # Extract prices
-            stock_prices = stock_data['Close']
-            market_prices = market_data['Close']
+            print(f"[Beta] [{symbol}] Starting calculation...")
+            print(f"[Beta] [{symbol}] Stock data: {len(stock_data)} rows")
+            print(f"[Beta] [{symbol}] Market data: {len(market_data)} rows")
             
-            # Compute daily returns
-            stock_returns = stock_prices.pct_change()
-            market_returns = market_prices.pct_change()
+            # 1. Strip timezones and extract Close prices
+            # This fixes date alignment issues caused by timezone mismatches
+            # Stock data might be 00:00:00+00:00 while market is 00:00:00+05:30
+            # tz_localize(None) makes both timezone-naive so they align properly
+            s_prices = stock_data['Close'].tz_localize(None)
+            m_prices = market_data['Close'].tz_localize(None)
             
-            # Align dates and combine
-            returns = pd.concat([stock_returns, market_returns], axis=1, join="inner")
-            returns.columns = ['stock', 'market']
-            returns.dropna(inplace=True)
+            # 2. Compute daily percentage returns
+            s_returns = s_prices.pct_change().dropna()
+            m_returns = m_prices.pct_change().dropna()
             
-            # Validate data points
-            if len(returns) < 30:
-                print(f"[Beta] [{symbol}] ❌ Insufficient data ({len(returns)} points, need 30+)")
+            print(f"[Beta] [{symbol}] Stock returns: {len(s_returns)} points")
+            print(f"[Beta] [{symbol}] Market returns: {len(m_returns)} points")
+            
+            # 3. Align the data on the same dates
+            df_returns = pd.concat([s_returns, m_returns], axis=1, join="inner")
+            df_returns.columns = ['stock', 'market']
+            
+            aligned_count = len(df_returns)
+            print(f"[Beta] [{symbol}] Aligned data: {aligned_count} points")
+            
+            # 4. Validate aligned data
+            if aligned_count < 30:
+                print(f"[Beta] [{symbol}] ❌ Insufficient aligned data ({aligned_count} < 30 required)")
                 return None
             
-            print(f"[Beta] [{symbol}] Computing beta ({len(returns)} aligned data points)...")
+            # 5. Calculate Beta using Covariance / Variance
+            # Beta = Cov(stock_returns, market_returns) / Var(market_returns)
+            covariance_matrix = np.cov(df_returns['stock'], df_returns['market'])
+            covariance = covariance_matrix[0, 1]
+            market_variance = covariance_matrix[1, 1]
             
-            # Beta = Cov(stock, market) / Var(market)
-            cov = np.cov(returns['stock'], returns['market'])[0, 1]
-            var = np.var(returns['market'])
-            
-            if var == 0:
+            # Validate variance
+            if market_variance == 0:
                 print(f"[Beta] [{symbol}] ❌ Market variance is zero")
                 return None
             
-            beta = cov / var
-            beta_rounded = round(beta, 4)
+            # Calculate and validate beta
+            beta = covariance / market_variance
             
-            # Check for reasonable beta value
-            if np.isnan(beta_rounded) or np.isinf(beta_rounded):
-                print(f"[Beta] [{symbol}] ❌ Invalid beta value")
+            # Check for invalid values
+            if np.isnan(beta) or np.isinf(beta):
+                print(f"[Beta] [{symbol}] ❌ Invalid beta value (NaN or Inf)")
                 return None
             
+            # Return rounded beta
+            beta_rounded = round(float(beta), 4)
             print(f"[Beta] [{symbol}] ✅ SUCCESS! Beta = {beta_rounded}")
             return beta_rounded
             
@@ -259,16 +241,7 @@ class DataFetcher:
     
     @staticmethod
     def extract_stock_data(info: Dict, price_hist: pd.DataFrame) -> Dict:
-        """
-        Extract key stock data
-        
-        Args:
-            info: Stock info dictionary from yfinance
-            price_hist: Historical price data
-        
-        Returns:
-            Dictionary with key metrics
-        """
+        """Extract key stock data"""
         try:
             current_price = info.get('currentPrice') or price_hist['Close'].iloc[-1]
             
@@ -289,105 +262,55 @@ class DataFetcher:
     
     @staticmethod
     def extract_financial_metrics(info: Dict) -> Dict:
-        """
-        Extract financial metrics with multiple fallback approaches
-        Handles missing data gracefully
-        
-        Args:
-            info: Stock info dictionary from yfinance
-        
-        Returns:
-            Dictionary with financial metrics
-        """
+        """Extract financial metrics with multiple fallback approaches"""
         try:
             metrics = {}
             
-            # ROE (Return on Equity) - Primary source
+            # Profitability Metrics
             metrics['roe'] = info.get('returnOnEquity')
-            
-            # NPM (Net Profit Margin) - Primary source
             metrics['npm'] = info.get('profitMargins')
-            
-            # ROA (Return on Assets) - Primary source
             metrics['roa'] = info.get('returnOnAssets')
-            
-            # ROIC (Return on Invested Capital) - Primary source
             metrics['roic'] = info.get('returnOnCapital')
             
-            # Debt to Equity Ratio - Multiple approaches
-            debt_to_equity = None
-            
-            # Approach 1: Direct from info
-            if debt_to_equity is None:
-                debt_to_equity = info.get('debtToEquity')
-            
-            # Approach 2: Calculate from total debt and equity
+            # Debt to Equity Ratio
+            debt_to_equity = info.get('debtToEquity')
             if debt_to_equity is None:
                 try:
                     total_debt = info.get('totalDebt')
                     total_equity = info.get('totalEquity')
-                    book_value = info.get('bookValue')
-                    shares_outstanding = info.get('sharesOutstanding', 1)
-                    
                     if total_debt and total_equity and total_equity > 0:
                         debt_to_equity = total_debt / total_equity
-                    elif total_debt and book_value and shares_outstanding and book_value * shares_outstanding > 0:
-                        debt_to_equity = total_debt / (book_value * shares_outstanding)
-                except Exception as e:
-                    print(f"Error calculating D/E ratio: {e}")
-            
+                except:
+                    pass
             metrics['debt_to_equity'] = debt_to_equity
             
-            # Current Ratio - Multiple approaches
-            current_ratio = None
-            
-            # Approach 1: Direct from info
-            if current_ratio is None:
-                current_ratio = info.get('currentRatio')
-            
-            # Approach 2: Calculate from current assets and liabilities
+            # Current Ratio
+            current_ratio = info.get('currentRatio')
             if current_ratio is None:
                 try:
                     current_assets = info.get('currentAssets')
                     current_liabilities = info.get('currentLiabilities')
-                    
                     if current_assets and current_liabilities and current_liabilities > 0:
                         current_ratio = current_assets / current_liabilities
-                except Exception as e:
-                    print(f"Error calculating Current ratio: {e}")
-            
+                except:
+                    pass
             metrics['current_ratio'] = current_ratio
             
-            # Interest Coverage - Multiple approaches
-            interest_coverage = None
-            
-            # Approach 1: Direct from info
-            if interest_coverage is None:
-                interest_coverage = info.get('interestCoverage')
-            
-            # Approach 2: Calculate from EBIT and interest expense
+            # Interest Coverage
+            interest_coverage = info.get('interestCoverage')
             if interest_coverage is None:
                 try:
-                    ebit = info.get('ebit')
-                    operating_income = info.get('operatingIncome')
+                    earnings = info.get('ebit') or info.get('operatingIncome')
                     interest_expense = info.get('interestExpense')
-                    
-                    earnings = ebit or operating_income
-                    
                     if earnings and interest_expense and interest_expense > 0:
                         interest_coverage = earnings / interest_expense
-                except Exception as e:
-                    print(f"Error calculating Interest coverage: {e}")
-            
+                except:
+                    pass
             metrics['interest_coverage'] = interest_coverage
             
-            # Revenue Growth YoY
+            # Growth Metrics
             metrics['revenue_growth_yoy'] = info.get('revenueGrowth')
-            
-            # Earnings Growth YoY
             metrics['earnings_growth_yoy'] = info.get('earningsGrowth')
-            
-            # PEG Ratio
             metrics['peg_ratio'] = info.get('pegRatio')
             
             return metrics
@@ -395,14 +318,8 @@ class DataFetcher:
         except Exception as e:
             print(f"Error extracting financial metrics: {e}")
             return {
-                'roe': None,
-                'npm': None,
-                'roa': None,
-                'roic': None,
-                'debt_to_equity': None,
-                'current_ratio': None,
-                'interest_coverage': None,
-                'revenue_growth_yoy': None,
-                'earnings_growth_yoy': None,
-                'peg_ratio': None,
+                'roe': None, 'npm': None, 'roa': None, 'roic': None,
+                'debt_to_equity': None, 'current_ratio': None,
+                'interest_coverage': None, 'revenue_growth_yoy': None,
+                'earnings_growth_yoy': None, 'peg_ratio': None,
             }
