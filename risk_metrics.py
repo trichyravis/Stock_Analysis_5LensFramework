@@ -1,536 +1,425 @@
-"""
-═══════════════════════════════════════════════════════════════════════════════
-THE MOUNTAIN PATH - WORLD OF FINANCE
-Advanced Risk Metrics Module
-Value-at-Risk (VaR), Conditional Value-at-Risk (CVaR), and Risk Analysis
-═══════════════════════════════════════════════════════════════════════════════
-
-Prof. V. Ravichandran - Financial Risk Management
-"""
 
 import numpy as np
 import pandas as pd
-from scipy import stats
-from typing import Dict, Tuple, Optional
-from datetime import datetime, timedelta
-import warnings
-warnings.filterwarnings('ignore')
-
+from typing import Tuple, Optional, Dict
 
 class RiskMetricsCalculator:
-    """
-    Advanced risk metrics calculator
-    Includes VaR, CVaR, Sharpe Ratio, Beta, Volatility, Drawdown Analysis
-    """
+    """Calculate comprehensive risk metrics for stocks"""
     
-    # Risk-free rate (approximate current)
-    RISK_FREE_RATE = 0.06  # 6% annual
-    
-    # Confidence levels for VaR
-    CONFIDENCE_95 = 0.95
-    CONFIDENCE_99 = 0.99
-
     @staticmethod
-    def calculate_all_risk_metrics(price_history: pd.Series, 
-                                   market_data: Optional[pd.Series] = None,
-                                   current_price: Optional[float] = None) -> Dict:
+    def calculate_beta(stock_prices: pd.Series, market_prices: pd.Series) -> Optional[float]:
         """
-        Calculate comprehensive risk metrics
+        Calculate Beta (stock sensitivity to market movements)
         
-        Parameters:
-        -----------
-        price_history : pd.Series
-            Historical price data
-        market_data : Optional[pd.Series]
-            Market index data (for beta calculation)
-        current_price : Optional[float]
-            Current stock price
-            
+        Beta = Covariance(Stock Returns, Market Returns) / Variance(Market Returns)
+        
+        Interpretation:
+        - Beta = 1.0: Stock moves exactly with market
+        - Beta > 1.0: Stock more volatile than market (aggressive)
+        - Beta < 1.0: Stock less volatile than market (defensive)
+        - Beta < 0.0: Stock moves opposite to market (rare)
+        
+        Args:
+            stock_prices: Series of stock prices
+            market_prices: Series of market index prices
+        
         Returns:
-        --------
-        Dict : All risk metrics
+            Beta value or None if insufficient data
         """
+        try:
+            # Validate inputs
+            if market_prices is None or len(market_prices) < 2 or len(stock_prices) < 2:
+                return None
+            
+            # Convert to pandas Series if needed
+            if not isinstance(stock_prices, pd.Series):
+                stock_prices = pd.Series(stock_prices)
+            if not isinstance(market_prices, pd.Series):
+                market_prices = pd.Series(market_prices)
+            
+            # Calculate daily returns (percentage change)
+            stock_returns = stock_prices.pct_change().dropna()
+            market_returns = market_prices.pct_change().dropna()
+            
+            # Ensure both series have same length
+            min_length = min(len(stock_returns), len(market_returns))
+            if min_length < 2:
+                return None
+            
+            stock_returns = stock_returns[-min_length:]
+            market_returns = market_returns[-min_length:]
+            
+            # Calculate covariance between stock and market
+            covariance = np.cov(stock_returns, market_returns)[0][1]
+            
+            # Calculate variance of market
+            market_variance = np.var(market_returns, ddof=1)
+            
+            # Avoid division by zero
+            if market_variance <= 0:
+                return None
+            
+            # Calculate beta
+            beta = covariance / market_variance
+            
+            # Validate result
+            if np.isnan(beta) or np.isinf(beta):
+                return None
+            
+            return beta
         
-        if len(price_history) < 2:
-            return RiskMetricsCalculator._get_default_metrics()
-        
-        metrics = {}
-        
-        # Basic metrics
-        metrics['volatility_252d'] = RiskMetricsCalculator.calculate_volatility(
-            price_history, periods=252
-        )
-        metrics['volatility_60d'] = RiskMetricsCalculator.calculate_volatility(
-            price_history, periods=60
-        )
-        
-        # VaR and CVaR
-        returns = RiskMetricsCalculator.calculate_returns(price_history)
-        metrics['var_95'] = RiskMetricsCalculator.calculate_var(returns, confidence=0.95)
-        metrics['var_99'] = RiskMetricsCalculator.calculate_var(returns, confidence=0.99)
-        metrics['cvar_95'] = RiskMetricsCalculator.calculate_cvar(returns, confidence=0.95)
-        
-        # Sharpe Ratio
-        metrics['sharpe_ratio'] = RiskMetricsCalculator.calculate_sharpe_ratio(
-            returns, risk_free_rate=RiskMetricsCalculator.RISK_FREE_RATE
-        )
-        
-        # Drawdown metrics
-        max_dd, avg_dd = RiskMetricsCalculator.calculate_drawdown(price_history)
-        metrics['max_drawdown'] = max_dd
-        metrics['avg_drawdown'] = avg_dd
-        
-        # Beta (if market data available)
-        if market_data is not None and len(market_data) >= len(price_history) * 0.5:
-            metrics['beta'] = RiskMetricsCalculator.calculate_beta(
-                price_history, market_data
-            )
-        else:
-            metrics['beta'] = 1.0  # Default
-        
-        # Sortino Ratio
-        metrics['sortino_ratio'] = RiskMetricsCalculator.calculate_sortino_ratio(
-            returns, risk_free_rate=RiskMetricsCalculator.RISK_FREE_RATE
-        )
-        
-        # Skewness and Kurtosis
-        metrics['skewness'] = float(stats.skew(returns))
-        metrics['kurtosis'] = float(stats.kurtosis(returns))
-        
-        # Calmar Ratio
-        metrics['calmar_ratio'] = RiskMetricsCalculator.calculate_calmar_ratio(
-            returns, max_dd
-        )
-        
-        # Information Ratio (if benchmark available)
-        metrics['information_ratio'] = 0.0  # Placeholder
-        
-        return metrics
-
+        except Exception as e:
+            print(f"Error calculating beta: {e}")
+            return None
+    
     @staticmethod
-    def calculate_volatility(price_history: pd.Series, periods: int = 252) -> float:
+    def calculate_volatility(prices: pd.Series, periods: int = 252) -> float:
         """
         Calculate annualized volatility (standard deviation of returns)
         
-        Parameters:
-        -----------
-        price_history : pd.Series
-            Historical prices
-        periods : int
-            Annual periods (252 for daily, 52 for weekly, 12 for monthly)
-            
+        Args:
+            prices: Series of prices
+            periods: Trading periods per year (default 252 for daily data)
+        
         Returns:
-        --------
-        float : Annualized volatility
+            Annualized volatility
         """
-        if len(price_history) < 2:
+        try:
+            if len(prices) < 2:
+                return 0.0
+            
+            # Calculate daily returns
+            returns = prices.pct_change().dropna()
+            
+            if len(returns) < 1:
+                return 0.0
+            
+            # Calculate daily volatility
+            daily_volatility = returns.std()
+            
+            # Annualize volatility
+            annualized_volatility = daily_volatility * np.sqrt(periods)
+            
+            return annualized_volatility
+        
+        except Exception as e:
+            print(f"Error calculating volatility: {e}")
             return 0.0
+    
+    @staticmethod
+    def calculate_sharpe_ratio(prices: pd.Series, risk_free_rate: float = 0.05) -> float:
+        """
+        Calculate Sharpe Ratio (risk-adjusted returns)
         
-        returns = price_history.pct_change().dropna()
+        Sharpe Ratio = (Average Return - Risk-Free Rate) / Volatility
         
-        if len(returns) == 0:
+        Interpretation:
+        - Sharpe > 1.0: Good risk-adjusted returns
+        - Sharpe > 2.0: Very good risk-adjusted returns
+        - Sharpe < 0.0: Returns worse than risk-free rate
+        
+        Args:
+            prices: Series of prices
+            risk_free_rate: Annual risk-free rate (default 5%)
+        
+        Returns:
+            Sharpe ratio
+        """
+        try:
+            if len(prices) < 2:
+                return 0.0
+            
+            # Calculate daily returns
+            returns = prices.pct_change().dropna()
+            
+            if len(returns) < 1:
+                return 0.0
+            
+            # Annualize returns
+            avg_daily_return = returns.mean()
+            annualized_return = avg_daily_return * 252
+            
+            # Get volatility
+            volatility = RiskMetricsCalculator.calculate_volatility(prices)
+            
+            # Calculate Sharpe ratio
+            if volatility <= 0:
+                return 0.0
+            
+            sharpe_ratio = (annualized_return - risk_free_rate) / volatility
+            
+            return sharpe_ratio
+        
+        except Exception as e:
+            print(f"Error calculating Sharpe ratio: {e}")
             return 0.0
-        
-        # Daily volatility * sqrt(252)
-        daily_vol = returns.std()
-        annualized_vol = daily_vol * np.sqrt(periods)
-        
-        return float(annualized_vol)
-
+    
     @staticmethod
-    def calculate_returns(price_history: pd.Series, method: str = 'log') -> np.ndarray:
+    def calculate_drawdown(prices: pd.Series) -> Tuple[float, int]:
         """
-        Calculate returns from price history
+        Calculate Maximum Drawdown and its duration
         
-        Parameters:
-        -----------
-        price_history : pd.Series
-            Historical prices
-        method : str
-            'simple' or 'log' returns
-            
+        Maximum Drawdown = (Trough Value - Peak Value) / Peak Value
+        
+        Interpretation:
+        - 0%: No decline from peak
+        - -10%: 10% decline from peak
+        - -50%: 50% decline from peak (severe)
+        
+        Args:
+            prices: Series of prices
+        
         Returns:
-        --------
-        np.ndarray : Returns
+            Tuple of (max_drawdown, drawdown_duration_in_days)
         """
-        if len(price_history) < 2:
-            return np.array([])
+        try:
+            if len(prices) < 2:
+                return 0.0, 0
+            
+            # Calculate cumulative maximum (running peak)
+            cummax = prices.cummax()
+            
+            # Calculate drawdown
+            drawdown = (prices - cummax) / cummax
+            
+            # Maximum drawdown
+            max_drawdown = drawdown.min()
+            
+            # Duration of drawdown (in trading days)
+            drawdown_duration = 0
+            if max_drawdown < 0:
+                # Find when maximum drawdown occurred
+                max_dd_idx = drawdown.idxmin()
+                # Find the peak before this drawdown
+                peak_before = cummax[:max_dd_idx].iloc[-1] if len(cummax[:max_dd_idx]) > 0 else prices.iloc[0]
+                # Find when price recovered to peak
+                prices_after_dd = prices[max_dd_idx:]
+                recovery_points = prices_after_dd[prices_after_dd >= peak_before]
+                
+                if len(recovery_points) > 0:
+                    drawdown_duration = len(prices[max_dd_idx:recovery_points.index[0]])
+                else:
+                    drawdown_duration = len(prices) - prices.index.get_loc(max_dd_idx)
+            
+            return max_drawdown, drawdown_duration
         
-        if method == 'log':
-            returns = np.log(price_history / price_history.shift(1)).dropna()
-        else:
-            returns = price_history.pct_change().dropna()
-        
-        return returns.values
-
+        except Exception as e:
+            print(f"Error calculating drawdown: {e}")
+            return 0.0, 0
+    
     @staticmethod
-    def calculate_var(returns: np.ndarray, confidence: float = 0.95, 
-                      method: str = 'historical') -> float:
+    def calculate_var(prices: pd.Series, confidence: float = 0.95) -> float:
         """
-        Calculate Value-at-Risk (VaR)
+        Calculate Value at Risk (VaR)
         
-        Parameters:
-        -----------
-        returns : np.ndarray
-            Historical returns
-        confidence : float
-            Confidence level (0.95 = 95%)
-        method : str
-            'historical', 'parametric', or 'cornish-fisher'
-            
+        VaR = Quantile of returns at given confidence level
+        
+        Interpretation:
+        - VaR(95%) = -0.05 means 5% chance of losing 5% or more in one day
+        
+        Args:
+            prices: Series of prices
+            confidence: Confidence level (0.95 = 95% confidence)
+        
         Returns:
-        --------
-        float : VaR as decimal (e.g., -0.05 for 5% loss)
+            VaR value
         """
-        if len(returns) < 10:
-            return -0.05  # Default
-        
-        if method == 'historical':
-            var = np.percentile(returns, (1 - confidence) * 100)
-        
-        elif method == 'parametric':
-            # Assume normal distribution
-            mean = np.mean(returns)
-            std = np.std(returns)
-            z_score = stats.norm.ppf(1 - confidence)
-            var = mean + z_score * std
-        
-        elif method == 'cornish-fisher':
-            # Modified VaR accounting for skewness and kurtosis
-            mean = np.mean(returns)
-            std = np.std(returns)
-            skew = stats.skew(returns)
-            kurt = stats.kurtosis(returns)
+        try:
+            if len(prices) < 2:
+                return 0.0
             
-            z = stats.norm.ppf(1 - confidence)
-            z_cf = (z + (z**2 - 1) * skew / 6 + 
-                   (z**3 - 3*z) * kurt / 24 - 
-                   (2*z**3 - 5*z) * skew**2 / 36)
+            # Calculate daily returns
+            returns = prices.pct_change().dropna()
             
-            var = mean + z_cf * std
-        
-        else:
-            var = np.percentile(returns, (1 - confidence) * 100)
-        
-        return float(var)
-
-    @staticmethod
-    def calculate_cvar(returns: np.ndarray, confidence: float = 0.95) -> float:
-        """
-        Calculate Conditional Value-at-Risk (CVaR) / Expected Shortfall
-        Average loss given that loss exceeds VaR
-        
-        Parameters:
-        -----------
-        returns : np.ndarray
-            Historical returns
-        confidence : float
-            Confidence level
+            if len(returns) < 1:
+                return 0.0
             
-        Returns:
-        --------
-        float : CVaR as decimal
-        """
-        if len(returns) < 10:
-            return -0.08  # Default
-        
-        var = RiskMetricsCalculator.calculate_var(returns, confidence)
-        cvar = returns[returns <= var].mean()
-        
-        if np.isnan(cvar):
-            cvar = var
-        
-        return float(cvar)
-
-    @staticmethod
-    def calculate_sharpe_ratio(returns: np.ndarray, risk_free_rate: float = 0.06,
-                               periods: int = 252) -> float:
-        """
-        Calculate Sharpe Ratio (risk-adjusted return)
-        Higher is better
-        
-        Parameters:
-        -----------
-        returns : np.ndarray
-            Daily returns
-        risk_free_rate : float
-            Annual risk-free rate
-        periods : int
-            Annual periods (252 for daily)
+            # Calculate VaR at given confidence level
+            alpha = 1 - confidence
+            var = returns.quantile(alpha)
             
-        Returns:
-        --------
-        float : Sharpe Ratio
-        """
-        if len(returns) < 2:
+            return var
+        
+        except Exception as e:
+            print(f"Error calculating VaR: {e}")
             return 0.0
-        
-        annual_return = np.mean(returns) * periods
-        annual_vol = np.std(returns) * np.sqrt(periods)
-        
-        if annual_vol == 0:
-            return 0.0
-        
-        sharpe = (annual_return - risk_free_rate) / annual_vol
-        
-        return float(sharpe)
-
+    
     @staticmethod
-    def calculate_sortino_ratio(returns: np.ndarray, risk_free_rate: float = 0.06,
-                                periods: int = 252) -> float:
+    def calculate_correlation_matrix(prices_dict: Dict[str, pd.Series]) -> pd.DataFrame:
         """
-        Calculate Sortino Ratio (downside risk-adjusted return)
-        Like Sharpe but only penalizes downside volatility
+        Calculate correlation matrix for multiple stocks
         
-        Parameters:
-        -----------
-        returns : np.ndarray
-            Daily returns
-        risk_free_rate : float
-            Annual risk-free rate
-        periods : int
-            Annual periods
-            
+        Args:
+            prices_dict: Dictionary of {stock_name: price_series}
+        
         Returns:
-        --------
-        float : Sortino Ratio
+            Correlation matrix DataFrame
         """
-        if len(returns) < 2:
-            return 0.0
-        
-        annual_return = np.mean(returns) * periods
-        
-        # Downside volatility (only negative returns)
-        downside_returns = returns[returns < 0]
-        if len(downside_returns) == 0:
-            downside_vol = 0.0
-        else:
-            downside_vol = np.std(downside_returns) * np.sqrt(periods)
-        
-        if downside_vol == 0:
-            return 0.0
-        
-        sortino = (annual_return - risk_free_rate) / downside_vol
-        
-        return float(sortino)
-
-    @staticmethod
-    def calculate_drawdown(price_history: pd.Series) -> Tuple[float, float]:
-        """
-        Calculate maximum and average drawdown
-        
-        Parameters:
-        -----------
-        price_history : pd.Series
-            Historical prices
+        try:
+            # Prepare data
+            returns_dict = {}
+            for stock_name, prices in prices_dict.items():
+                returns = prices.pct_change().dropna()
+                if len(returns) > 0:
+                    returns_dict[stock_name] = returns
             
-        Returns:
-        --------
-        Tuple[float, float] : (max_drawdown, avg_drawdown)
-        """
-        if len(price_history) < 2:
-            return 0.0, 0.0
-        
-        # Calculate cumulative maximum
-        cum_max = price_history.expanding().max()
-        
-        # Calculate drawdown as % from peak
-        drawdown = (price_history - cum_max) / cum_max
-        
-        max_dd = float(drawdown.min())
-        avg_dd = float(drawdown[drawdown < 0].mean()) if len(drawdown[drawdown < 0]) > 0 else 0.0
-        
-        return max_dd, avg_dd
-
-    @staticmethod
-    def calculate_beta(stock_prices: pd.Series, market_prices: pd.Series) -> float:
-        """
-        Calculate Beta (systematic risk)
-        Measures stock volatility relative to market
-        
-        Parameters:
-        -----------
-        stock_prices : pd.Series
-            Stock price history
-        market_prices : pd.Series
-            Market index price history
+            if len(returns_dict) < 2:
+                return pd.DataFrame()
             
-        Returns:
-        --------
-        float : Beta
-        """
-        if len(stock_prices) < 20 or len(market_prices) < 20:
-            return 1.0
-        
-        # Align data
-        min_len = min(len(stock_prices), len(market_prices))
-        stock_prices = stock_prices.iloc[-min_len:]
-        market_prices = market_prices.iloc[-min_len:]
-        
-        # Calculate returns
-        stock_returns = stock_prices.pct_change().dropna()
-        market_returns = market_prices.pct_change().dropna()
-        
-        # Align returns
-        min_ret_len = min(len(stock_returns), len(market_returns))
-        stock_returns = stock_returns.iloc[-min_ret_len:].values
-        market_returns = market_returns.iloc[-min_ret_len:].values
-        
-        if len(stock_returns) < 2 or len(market_returns) < 2:
-            return 1.0
-        
-        # Calculate beta
-        covariance = np.cov(stock_returns, market_returns)[0, 1]
-        market_variance = np.var(market_returns)
-        
-        if market_variance == 0:
-            return 1.0
-        
-        beta = covariance / market_variance
-        
-        return float(beta)
-
-    @staticmethod
-    def calculate_calmar_ratio(returns: np.ndarray, max_drawdown: float,
-                               periods: int = 252) -> float:
-        """
-        Calculate Calmar Ratio
-        Annual return / Maximum drawdown (absolute value)
-        
-        Parameters:
-        -----------
-        returns : np.ndarray
-            Daily returns
-        max_drawdown : float
-            Maximum drawdown (as decimal)
-        periods : int
-            Annual periods
+            # Create DataFrame
+            returns_df = pd.DataFrame(returns_dict)
             
-        Returns:
-        --------
-        float : Calmar Ratio
-        """
-        if len(returns) < 2 or max_drawdown == 0:
-            return 0.0
-        
-        annual_return = np.mean(returns) * periods
-        
-        # Use absolute value of max_drawdown
-        calmar = annual_return / abs(max_drawdown)
-        
-        return float(calmar)
-
-    @staticmethod
-    def calculate_rolling_volatility(price_history: pd.Series, window: int = 60) -> pd.Series:
-        """
-        Calculate rolling volatility
-        
-        Parameters:
-        -----------
-        price_history : pd.Series
-            Historical prices
-        window : int
-            Rolling window size
+            # Calculate correlation
+            correlation = returns_df.corr()
             
-        Returns:
-        --------
-        pd.Series : Rolling volatility
-        """
-        returns = price_history.pct_change()
-        rolling_vol = returns.rolling(window=window).std() * np.sqrt(252)
+            return correlation
         
-        return rolling_vol
-
+        except Exception as e:
+            print(f"Error calculating correlation matrix: {e}")
+            return pd.DataFrame()
+    
     @staticmethod
-    def calculate_correlation_matrix(price_histories: Dict[str, pd.Series]) -> pd.DataFrame:
+    def calculate_all_risk_metrics(stock_prices: pd.Series, 
+                                   market_prices: Optional[pd.Series] = None,
+                                   current_price: Optional[float] = None) -> Dict:
         """
-        Calculate correlation matrix between multiple stocks
+        Calculate all risk metrics for a stock
         
-        Parameters:
-        -----------
-        price_histories : Dict[str, pd.Series]
-            Dictionary of stock name -> price history
+        Args:
+            stock_prices: Series of stock prices
+            market_prices: Series of market index prices (optional)
+            current_price: Current stock price (optional)
+        
+        Returns:
+            Dictionary with all risk metrics
+        """
+        try:
+            metrics = {}
             
-        Returns:
-        --------
-        pd.DataFrame : Correlation matrix
-        """
-        # Calculate returns for all stocks
-        returns = {}
-        for name, prices in price_histories.items():
-            ret = prices.pct_change().dropna()
-            returns[name] = ret
+            # BETA CALCULATION (Only if market data available)
+            if market_prices is not None and len(market_prices) > 1:
+                beta = RiskMetricsCalculator.calculate_beta(stock_prices, market_prices)
+                metrics['beta'] = beta if beta is not None else 1.0
+            else:
+                # No market data available
+                metrics['beta'] = None
+            
+            # VOLATILITY (252-day annualized)
+            volatility = RiskMetricsCalculator.calculate_volatility(stock_prices)
+            metrics['volatility_252d'] = volatility
+            
+            # SHARPE RATIO
+            sharpe_ratio = RiskMetricsCalculator.calculate_sharpe_ratio(stock_prices)
+            metrics['sharpe_ratio'] = sharpe_ratio
+            
+            # MAXIMUM DRAWDOWN and Duration
+            max_dd, dd_duration = RiskMetricsCalculator.calculate_drawdown(stock_prices)
+            metrics['max_drawdown'] = max_dd
+            metrics['drawdown_duration'] = dd_duration
+            
+            # VALUE AT RISK (95% confidence)
+            var_95 = RiskMetricsCalculator.calculate_var(stock_prices, confidence=0.95)
+            metrics['var_95'] = var_95
+            
+            # TOTAL RETURN
+            try:
+                total_return = (stock_prices.iloc[-1] - stock_prices.iloc[0]) / stock_prices.iloc[0]
+                metrics['total_return'] = total_return
+            except:
+                metrics['total_return'] = 0.0
+            
+            return metrics
         
-        # Create DataFrame
-        returns_df = pd.DataFrame(returns)
-        
-        # Calculate correlation
-        correlation = returns_df.corr()
-        
-        return correlation
-
-    @staticmethod
-    def _get_default_metrics() -> Dict:
-        """Get default metrics when insufficient data"""
-        return {
-            'volatility_252d': 0.25,
-            'volatility_60d': 0.25,
-            'var_95': -0.05,
-            'var_99': -0.08,
-            'cvar_95': -0.08,
-            'sharpe_ratio': 0.5,
-            'max_drawdown': -0.20,
-            'avg_drawdown': -0.10,
-            'beta': 1.0,
-            'sortino_ratio': 0.7,
-            'skewness': 0.0,
-            'kurtosis': 0.0,
-            'calmar_ratio': 1.0,
-            'information_ratio': 0.0
-        }
-
+        except Exception as e:
+            print(f"Error calculating all risk metrics: {e}")
+            return {
+                'beta': None,
+                'volatility_252d': 0.0,
+                'sharpe_ratio': 0.0,
+                'max_drawdown': 0.0,
+                'drawdown_duration': 0,
+                'var_95': 0.0,
+                'total_return': 0.0,
+            }
+    
     @staticmethod
     def risk_profile_summary(risk_metrics: Dict) -> str:
         """
-        Generate risk profile summary
+        Generate a summary of the risk profile
         
-        Parameters:
-        -----------
-        risk_metrics : Dict
-            Risk metrics
-            
+        Args:
+            risk_metrics: Dictionary of risk metrics
+        
         Returns:
-        --------
-        str : Risk profile summary
+            HTML/markdown formatted risk summary
         """
-        vol = risk_metrics.get('volatility_252d', 0.25) * 100
-        beta = risk_metrics.get('beta', 1.0)
-        sharpe = risk_metrics.get('sharpe_ratio', 0.5)
-        max_dd = risk_metrics.get('max_drawdown', -0.20) * 100
-        var_95 = risk_metrics.get('var_95', -0.05) * 100
-        
-        # Determine risk profile
-        if vol < 15:
-            vol_profile = "Low Volatility"
-        elif vol < 25:
-            vol_profile = "Moderate Volatility"
-        else:
-            vol_profile = "High Volatility"
-        
-        if beta < 0.8:
-            beta_profile = "Defensive"
-        elif beta > 1.2:
-            beta_profile = "Aggressive"
-        else:
-            beta_profile = "Market-Aligned"
-        
-        summary = f"""
-**RISK PROFILE SUMMARY**
+        try:
+            beta = risk_metrics.get('beta')
+            volatility = risk_metrics.get('volatility_252d', 0.0)
+            sharpe = risk_metrics.get('sharpe_ratio', 0.0)
+            max_dd = risk_metrics.get('max_drawdown', 0.0)
+            var_95 = risk_metrics.get('var_95', 0.0)
+            total_return = risk_metrics.get('total_return', 0.0)
+            
+            # Determine risk profile
+            if beta is None:
+                beta_text = "Market data unavailable"
+            elif beta > 1.2:
+                beta_text = f"{beta:.2f}x - High sensitivity to market movements"
+            elif beta > 0.8:
+                beta_text = f"{beta:.2f}x - Moderate sensitivity to market movements"
+            else:
+                beta_text = f"{beta:.2f}x - Low sensitivity to market movements (Defensive)"
+            
+            if volatility > 0.30:
+                vol_text = f"{volatility*100:.1f}% - High volatility (Risky)"
+            elif volatility > 0.20:
+                vol_text = f"{volatility*100:.1f}% - Moderate volatility"
+            else:
+                vol_text = f"{volatility*100:.1f}% - Low volatility (Stable)"
+            
+            if sharpe > 1.0:
+                sharpe_text = f"{sharpe:.2f} - Good risk-adjusted returns"
+            elif sharpe > 0.0:
+                sharpe_text = f"{sharpe:.2f} - Moderate risk-adjusted returns"
+            else:
+                sharpe_text = f"{sharpe:.2f} - Poor risk-adjusted returns"
+            
+            summary = f"""
+**Risk Profile Analysis:**
 
-Volatility (252-day):  {vol:.2f}% → {vol_profile}
-Beta:                  {beta:.2f}x → {beta_profile}
-Sharpe Ratio:          {sharpe:.2f} → {'Excellent' if sharpe > 1 else 'Good' if sharpe > 0.5 else 'Fair'}
-Max Drawdown:          {max_dd:.2f}%
-Value-at-Risk (95%):   {var_95:.2f}% daily loss possible
+- **Beta**: {beta_text}
+- **Volatility (252d)**: {vol_text}
+- **Sharpe Ratio**: {sharpe_text}
+- **Maximum Drawdown**: {max_dd*100:.1f}%
+- **Value at Risk (95%)**: {var_95*100:.1f}%
+- **Total Return**: {total_return*100:.1f}%
+
+**Risk Assessment:**
 """
-        return summary
+            
+            if beta is None or beta == 1.0:
+                summary += "⚠️ Market correlation data unavailable. Beta may not reflect true market sensitivity.\n"
+            
+            if volatility > 0.25:
+                summary += "⚠️ High volatility - stock price fluctuates significantly.\n"
+            elif volatility < 0.15:
+                summary += "✅ Low volatility - stable stock price.\n"
+            
+            if max_dd < -0.30:
+                summary += "⚠️ Severe drawdowns observed - significant downside risk.\n"
+            elif max_dd < -0.15:
+                summary += "⚠️ Moderate drawdowns observed.\n"
+            else:
+                summary += "✅ Drawdowns relatively contained.\n"
+            
+            if sharpe > 1.0:
+                summary += "✅ Good risk-adjusted returns for the risk taken.\n"
+            elif sharpe < 0:
+                summary += "⚠️ Returns not compensating for risk taken.\n"
+            
+            return summary.strip()
+        
+        except Exception as e:
+            print(f"Error generating risk summary: {e}")
+            return "Unable to generate risk profile summary."
