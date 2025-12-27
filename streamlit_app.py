@@ -174,7 +174,7 @@ if analysis_mode == "Single Stock Analysis":
                 lens_scores = framework.evaluate_stock(stock_data, financial_metrics, risk_metrics)
                 
                 # ═════════════════════════════════════════════════════════════
-                # DISPLAY RESULTS *
+                # DISPLAY RESULTS
                 # ═════════════════════════════════════════════════════════════
                 
                 st.markdown(f"## {selected_company} ({symbol})")
@@ -411,7 +411,7 @@ if analysis_mode == "Single Stock Analysis":
                         st.write(f"**Risk & Momentum Score: {lens_scores.risk_momentum:.1f}/100**")
                         col_a, col_b, col_c = st.columns(3)
                         
-                        # BETA - FIXED (No default to 1.0)
+                        # BETA - FIXED: Proper None/NaN checking (NO default to 1.0)
                         with col_a:
                             beta = risk_metrics.get('beta')
                             if beta is not None and not np.isnan(beta):
