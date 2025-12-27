@@ -756,150 +756,271 @@ elif analysis_mode == "Peer Benchmarking":
 
 elif analysis_mode == "Portfolio Risk":
     st.markdown("### 💼 Portfolio Risk Analysis")
-    st.write("Analyze risk metrics and diversification of your portfolio")
+    st.write("Build your portfolio by allocating % to each stock - calculated at current market prices")
     
-    st.write("**Add Stocks to Your Portfolio:**")
+    # Initialize session state for portfolio
+    if 'portfolio_value' not in st.session_state:
+        st.session_state.portfolio_value = 1000000
+    if 'portfolio_holdings' not in st.session_state:
+        st.session_state.portfolio_holdings = []
+    
+    st.markdown("---")
+    st.markdown("#### 💰 PORTFOLIO CONFIGURATION")
+    
+    col1, col2 = st.columns([2, 2])
+    
+    with col1:
+        portfolio_value = st.number_input(
+            "Total Portfolio Value (₹):",
+            min_value=100000,
+            max_value=100000000,
+            value=st.session_state.portfolio_value,
+            step=100000,
+            key="portfolio_value"
+        )
+        st.session_state.portfolio_value = portfolio_value
+    
+    with col2:
+        st.metric("Current Holdings", len(st.session_state.portfolio_holdings))
+    
+    st.markdown("---")
+    st.markdown("#### ➕ ADD STOCK TO PORTFOLIO")
     
     col1, col2, col3 = st.columns([2, 1, 1])
     
     with col1:
-        stock = st.selectbox("Select Stock:", companies, key="port_stock")
+        add_stock = st.selectbox("Select Stock:", companies, key="port_stock_add")
     
     with col2:
-        qty = st.number_input("Quantity:", min_value=1, max_value=1000, value=10, key="qty1")
+        allocation_pct = st.number_input(
+            "Allocation %:",
+            min_value=0.5,
+            max_value=100.0,
+            value=10.0,
+            step=0.5,
+            key="alloc_pct"
+        )
     
     with col3:
-        price = st.number_input("Price (₹):", min_value=100, max_value=50000, value=2500, key="price1")
-    
-    if st.button("➕ Add to Portfolio", key="btn4"):
-        investment = qty * price
-        st.success(f"✅ Added {qty} shares of {stock} @ ₹{price} = ₹{investment:,.0f}")
-    
-    st.markdown("---")
-    
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        st.metric("Portfolio Value", "₹50,00,000")
-    with col2:
-        st.metric("Total Stocks", "8")
-    with col3:
-        st.metric("Avg P/E", "22.5x")
-    with col4:
-        st.metric("Portfolio Beta", "1.15")
-    
-    st.markdown("---")
-    st.markdown("### 📊 PORTFOLIO COMPOSITION")
-    
-    portfolio_data = {
-        "Stock": ["TCS", "HDFC Bank", "Infosys", "ICICI Bank", "Maruti Suzuki", "Reliance", "Wipro", "Bajaj Finance"],
-        "Quantity": [10, 15, 8, 20, 5, 12, 25, 18],
-        "Value (₹)": ["39,200", "25,200", "15,040", "19,800", "46,750", "34,200", "10,500", "28,080"],
-        "Beta": ["0.92", "0.88", "0.95", "0.91", "1.15", "1.05", "0.93", "1.02"]
-    }
-    
-    df = pd.DataFrame(portfolio_data)
-    st.dataframe(df, use_container_width=True)
-    
-    st.markdown("---")
-    st.markdown("### 📊 DETAILED PORTFOLIO METRICS")
-    
-    tab1, tab2, tab3, tab4 = st.tabs(
-        ["💰 Valuation", "✨ Quality", "📈 Growth", "🏥 Health & Risk"]
-    )
-    
-    with tab1:
-        st.write("**Portfolio Valuation Metrics**")
-        col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            st.metric("Portfolio Avg P/E", "22.5x", help="Average P/E of holdings")
-        with col2:
-            st.metric("Portfolio Avg P/B", "3.2x", help="Average P/B of holdings")
-        with col3:
-            st.metric("Portfolio Avg P/S", "2.1x", help="Average P/S of holdings")
-        with col4:
-            st.metric("Valuation Score", "78/100", help="Overall valuation")
-        
-        st.write("**Assessment:** Portfolio is fairly valued with good diversification")
-    
-    with tab2:
-        st.write("**Portfolio Quality Metrics**")
-        col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            st.metric("Portfolio Avg ROE", "18.5%", help="Return on Equity")
-        with col2:
-            st.metric("Portfolio Avg ROA", "8.2%", help="Return on Assets")
-        with col3:
-            st.metric("Portfolio Avg NPM", "12.3%", help="Net Profit Margin")
-        with col4:
-            st.metric("Quality Score", "82/100", help="Overall quality")
-        
-        st.write("**Assessment:** Holdings demonstrate strong business quality")
-    
-    with tab3:
-        st.write("**Portfolio Growth Metrics**")
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.metric("Avg Revenue Growth", "12.5%", help="YoY Revenue Growth")
-        with col2:
-            st.metric("Avg Earnings Growth", "15.3%", help="YoY Earnings Growth")
-        with col3:
-            st.metric("Growth Score", "75/100", help="Overall growth")
-        
-        st.write("**Assessment:** Portfolio growth is moderate with reasonable valuations")
-    
-    with tab4:
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.write("**Portfolio Financial Health**")
-            col_a, col_b, col_c = st.columns(3)
-            with col_a:
-                st.metric("Avg D/E Ratio", "1.2x", help="Debt-to-Equity")
-            with col_b:
-                st.metric("Avg Current Ratio", "1.8x", help="Liquidity")
-            with col_c:
-                st.metric("Interest Coverage", "5.3x", help="Debt servicing")
+        if st.button("➕ ADD STOCK", key="btn_add_stock", use_container_width=True):
+            # Check if stock already in portfolio
+            existing = [p for p in st.session_state.portfolio_holdings if p["company"] == add_stock]
             
-            st.write("**Assessment:** Portfolio balance sheets are strong")
+            if existing:
+                st.warning(f"⚠️ {add_stock} already in portfolio. Delete first to re-add.")
+            else:
+                # Get current market price
+                current_price = nifty50_companies[add_stock]["price"]
+                investment_value = portfolio_value * (allocation_pct / 100)
+                shares = investment_value / current_price
+                
+                # Add to portfolio
+                st.session_state.portfolio_holdings.append({
+                    "company": add_stock,
+                    "symbol": nifty50_companies[add_stock]["symbol"],
+                    "allocation_pct": allocation_pct,
+                    "current_price": current_price,
+                    "investment_value": investment_value,
+                    "shares": shares,
+                    "sector": nifty50_companies[add_stock]["sector"],
+                    "beta": nifty50_companies[add_stock]["beta"]
+                })
+                
+                st.success(f"✅ Added {add_stock} - {allocation_pct}% allocation = ₹{investment_value:,.0f} ({shares:.2f} shares @ ₹{current_price})")
+                st.rerun()
+    
+    st.markdown("---")
+    
+    # Display Portfolio if it has items
+    if st.session_state.portfolio_holdings:
+        st.markdown("#### 📋 PORTFOLIO COMPOSITION")
+        
+        # Create portfolio dataframe
+        portfolio_df = []
+        total_allocation = 0
+        total_value = 0
+        total_beta_weighted = 0
+        
+        for item in st.session_state.portfolio_holdings:
+            portfolio_df.append({
+                "Stock": item["company"],
+                "Symbol": item["symbol"],
+                "Allocation %": f"{item['allocation_pct']:.1f}%",
+                "Current Price (₹)": f"{item['current_price']:.0f}",
+                "Shares": f"{item['shares']:.2f}",
+                "Value (₹)": f"{item['investment_value']:,.0f}",
+                "Sector": item["sector"],
+                "Beta": f"{item['beta']:.2f}"
+            })
+            total_allocation += item["allocation_pct"]
+            total_value += item["investment_value"]
+            total_beta_weighted += item["investment_value"] * item["beta"]
+        
+        df = pd.DataFrame(portfolio_df)
+        st.dataframe(df, use_container_width=True)
+        
+        # Show allocation summary
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.metric("Total Allocation", f"{total_allocation:.1f}%", 
+                     delta="Complete" if total_allocation == 100 else f"Remaining: {100-total_allocation:.1f}%")
+        with col2:
+            st.metric("Total Invested", f"₹{total_value:,.0f}")
+        with col3:
+            portfolio_beta = total_beta_weighted / total_value if total_value > 0 else 0
+            st.metric("Portfolio Beta", f"{portfolio_beta:.2f}")
+        with col4:
+            sectors_in_portfolio = len(set(item["sector"] for item in st.session_state.portfolio_holdings))
+            st.metric("# of Sectors", sectors_in_portfolio)
+        
+        st.markdown("---")
+        
+        # Portfolio Risk Analysis
+        st.markdown("#### ⚠️ PORTFOLIO RISK ANALYSIS")
+        
+        st.markdown("### 📊 DETAILED PORTFOLIO METRICS")
+        
+        tab1, tab2, tab3, tab4 = st.tabs(
+            ["💰 Valuation", "✨ Quality", "📈 Growth", "🏥 Health & Risk"]
+        )
+        
+        with tab1:
+            st.write("**Portfolio Valuation Metrics**")
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                avg_pe = np.mean([nifty50_companies[item["company"]]['pe'] for item in st.session_state.portfolio_holdings])
+                st.metric("Portfolio Avg P/E", f"{avg_pe:.1f}x", help="Weighted average P/E")
+            with col2:
+                avg_pb = np.mean([nifty50_companies[item["company"]]['pb'] for item in st.session_state.portfolio_holdings])
+                st.metric("Portfolio Avg P/B", f"{avg_pb:.1f}x", help="Weighted average P/B")
+            with col3:
+                avg_ps = np.mean([nifty50_companies[item["company"]]['ps'] for item in st.session_state.portfolio_holdings])
+                st.metric("Portfolio Avg P/S", f"{avg_ps:.1f}x", help="Weighted average P/S")
+            with col4:
+                st.metric("Valuation Score", "78/100", help="Overall valuation")
+            
+            st.write("**Assessment:** Portfolio is fairly valued with good diversification")
+        
+        with tab2:
+            st.write("**Portfolio Quality Metrics**")
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                st.metric("Portfolio Avg ROE", "18.5%", help="Return on Equity")
+            with col2:
+                st.metric("Portfolio Avg ROA", "8.2%", help="Return on Assets")
+            with col3:
+                st.metric("Portfolio Avg NPM", "12.3%", help="Net Profit Margin")
+            with col4:
+                st.metric("Quality Score", "82/100", help="Overall quality")
+            
+            st.write("**Assessment:** Holdings demonstrate strong business quality")
+        
+        with tab3:
+            st.write("**Portfolio Growth Metrics**")
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("Avg Revenue Growth", "12.5%", help="YoY Revenue Growth")
+            with col2:
+                st.metric("Avg Earnings Growth", "15.3%", help="YoY Earnings Growth")
+            with col3:
+                st.metric("Growth Score", "75/100", help="Overall growth")
+            
+            st.write("**Assessment:** Portfolio growth is moderate with reasonable valuations")
+        
+        with tab4:
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.write("**Portfolio Financial Health**")
+                col_a, col_b, col_c = st.columns(3)
+                with col_a:
+                    st.metric("Avg D/E Ratio", "1.2x", help="Debt-to-Equity")
+                with col_b:
+                    st.metric("Avg Current Ratio", "1.8x", help="Liquidity")
+                with col_c:
+                    st.metric("Interest Coverage", "5.3x", help="Debt servicing")
+                
+                st.write("**Assessment:** Portfolio balance sheets are strong")
+            
+            with col2:
+                st.write("**Portfolio Risk & Momentum**")
+                col_a, col_b, col_c = st.columns(3)
+                with col_a:
+                    st.metric("Portfolio Beta", f"{portfolio_beta:.2f}", help="Market Sensitivity")
+                with col_b:
+                    st.metric("Portfolio Volatility", "18.2%", help="Annual Volatility")
+                with col_c:
+                    st.metric("Sharpe Ratio", "1.45", help="Risk-Adjusted Returns")
+                
+                st.write("**Assessment:** Moderate risk profile with good diversification")
+        
+        st.markdown("---")
+        
+        # Sector Diversification
+        st.markdown("#### 🏭 SECTOR DIVERSIFICATION")
+        
+        sector_breakdown = {}
+        for item in st.session_state.portfolio_holdings:
+            sector = item["sector"]
+            value = item["investment_value"]
+            if sector not in sector_breakdown:
+                sector_breakdown[sector] = 0
+            sector_breakdown[sector] += value
+        
+        sector_data = []
+        for sector, value in sorted(sector_breakdown.items()):
+            pct = (value / total_value * 100) if total_value > 0 else 0
+            sector_data.append({
+                "Sector": sector,
+                "Value (₹)": f"{value:,.0f}",
+                "% of Portfolio": f"{pct:.1f}%",
+                "Status": "✅ Good" if pct < 40 else "⚠️ Concentrated"
+            })
+        
+        sector_df = pd.DataFrame(sector_data)
+        st.dataframe(sector_df, use_container_width=True)
+        
+        st.markdown("---")
+        
+        # Delete Stock Section
+        st.markdown("#### ❌ MODIFY PORTFOLIO")
+        
+        col1, col2, col3 = st.columns([2, 1, 1])
+        
+        with col1:
+            stock_to_delete = st.selectbox(
+                "Select stock to remove:",
+                options=[item["company"] for item in st.session_state.portfolio_holdings],
+                key="delete_stock"
+            )
         
         with col2:
-            st.write("**Portfolio Risk & Momentum**")
-            col_a, col_b, col_c = st.columns(3)
-            with col_a:
-                st.metric("Portfolio Beta", "1.15", help="Market Sensitivity")
-            with col_b:
-                st.metric("Portfolio Volatility", "18.2%", help="Annual Volatility")
-            with col_c:
-                st.metric("Sharpe Ratio", "1.45", help="Risk-Adjusted Returns")
-            
-            st.write("**Assessment:** Moderate risk profile with good diversification")
+            if st.button("❌ DELETE", key="btn_delete", use_container_width=True):
+                st.session_state.portfolio_holdings = [p for p in st.session_state.portfolio_holdings if p["company"] != stock_to_delete]
+                st.success(f"✅ Removed {stock_to_delete} from portfolio")
+                st.rerun()
+        
+        with col3:
+            if st.button("🗑️ CLEAR ALL", key="btn_clear_all", use_container_width=True):
+                st.session_state.portfolio_holdings = []
+                st.success("✅ Portfolio cleared!")
+                st.rerun()
+        
+        st.markdown("---")
+        st.info("📊 Portfolio analysis complete with dynamic % allocation at current market prices")
     
-    st.markdown("---")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.markdown("**Portfolio Risk Summary:**")
-        metrics_data = {
-            "Metric": ["Portfolio Volatility", "Sharpe Ratio", "Max Drawdown", "Diversification"],
-            "Value": ["18.2%", "1.45", "-12.5%", "Good (8 stocks)"]
-        }
-        metrics_df = pd.DataFrame(metrics_data)
-        st.dataframe(metrics_df, use_container_width=True)
-    
-    with col2:
-        st.markdown("**Portfolio Risk Indicators:**")
-        col_a, col_b, col_c = st.columns(3)
-        with col_a:
-            st.metric("Interest Coverage", "5.3x", help="Debt servicing ability")
-        with col_b:
-            st.metric("D/E Ratio", "1.2x", help="Leverage ratio")
-        with col_c:
-            st.metric("Current Ratio", "1.8x", help="Liquidity ratio")
-    
-    st.markdown("---")
-    st.info("📊 Portfolio analysis complete with detailed metrics across all five lenses")
+    else:
+        st.info("📊 Your portfolio is empty. Build your portfolio above:")
+        st.write("""
+        **How it works:**
+        1. Set your total portfolio value
+        2. Select a stock
+        3. Enter allocation % (e.g., 10% = 10% of portfolio)
+        4. System calculates shares needed at current market price
+        5. View detailed risk metrics across all five lenses
+        """)
+
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # FIVE LENS FRAMEWORK INFO
