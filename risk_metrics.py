@@ -299,7 +299,7 @@ class RiskMetricsCalculator:
             # BETA CALCULATION (Only if market data available)
             if market_prices is not None and len(market_prices) > 1:
                 beta = RiskMetricsCalculator.calculate_beta(stock_prices, market_prices)
-                metrics['beta'] = beta if beta is not None else 1.0
+                metrics['beta'] = beta  # Keep None, don't force 1.0!
             else:
                 # No market data available
                 metrics['beta'] = None
