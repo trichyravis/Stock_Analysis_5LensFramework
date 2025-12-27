@@ -2,7 +2,7 @@
 """
 ═══════════════════════════════════════════════════════════════════════════════
 THE MOUNTAIN PATH - WORLD OF FINANCE
-Nifty 50 Stock Analysis Platform
+Nifty 50 Stock Analysis Platform - With Dynamic Portfolio Management
 Five-Lens Framework with Advanced Risk Metrics
 ═══════════════════════════════════════════════════════════════════════════════
 
@@ -155,6 +155,13 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# SESSION STATE FOR PORTFOLIO
+# ═══════════════════════════════════════════════════════════════════════════════
+
+if 'portfolio' not in st.session_state:
+    st.session_state.portfolio = []
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # HEADER
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -232,23 +239,23 @@ with st.sidebar:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 nifty50_companies = {
-    "Reliance Industries": {"symbol": "RELIANCE.NS", "sector": "Energy", "pe": 18.5, "price": 2850, "pb": 1.8, "ps": 0.9},
-    "TCS": {"symbol": "TCS.NS", "sector": "IT", "pe": 22.3, "price": 3920, "pb": 4.2, "ps": 3.1},
-    "HDFC Bank": {"symbol": "HDFCBANK.NS", "sector": "Banking", "pe": 25.1, "price": 1680, "pb": 3.5, "ps": 5.2},
-    "Infosys": {"symbol": "INFY.NS", "sector": "IT", "pe": 24.8, "price": 1880, "pb": 3.8, "ps": 2.9},
-    "ICICI Bank": {"symbol": "ICICIBANK.NS", "sector": "Banking", "pe": 20.2, "price": 990, "pb": 2.1, "ps": 4.5},
-    "Hindustan Unilever": {"symbol": "HINDUNILVR.NS", "sector": "FMCG", "pe": 45.6, "price": 2320, "pb": 12.5, "ps": 8.2},
-    "Wipro": {"symbol": "WIPRO.NS", "sector": "IT", "pe": 20.1, "price": 420, "pb": 3.2, "ps": 1.8},
-    "Bajaj Finance": {"symbol": "BAJAJFINSV.NS", "sector": "Finance", "pe": 18.9, "price": 1560, "pb": 2.8, "ps": 3.5},
-    "Maruti Suzuki": {"symbol": "MARUTI.NS", "sector": "Auto", "pe": 15.3, "price": 9350, "pb": 1.5, "ps": 0.7},
-    "IndusInd Bank": {"symbol": "INDUSINDBK.NS", "sector": "Banking", "pe": 16.8, "price": 1140, "pb": 1.9, "ps": 3.8},
+    "Reliance Industries": {"symbol": "RELIANCE.NS", "sector": "Energy", "pe": 18.5, "price": 2850, "pb": 1.8, "ps": 0.9, "beta": 1.05},
+    "TCS": {"symbol": "TCS.NS", "sector": "IT", "pe": 22.3, "price": 3920, "pb": 4.2, "ps": 3.1, "beta": 0.92},
+    "HDFC Bank": {"symbol": "HDFCBANK.NS", "sector": "Banking", "pe": 25.1, "price": 1680, "pb": 3.5, "ps": 5.2, "beta": 0.88},
+    "Infosys": {"symbol": "INFY.NS", "sector": "IT", "pe": 24.8, "price": 1880, "pb": 3.8, "ps": 2.9, "beta": 0.95},
+    "ICICI Bank": {"symbol": "ICICIBANK.NS", "sector": "Banking", "pe": 20.2, "price": 990, "pb": 2.1, "ps": 4.5, "beta": 0.91},
+    "Hindustan Unilever": {"symbol": "HINDUNILVR.NS", "sector": "FMCG", "pe": 45.6, "price": 2320, "pb": 12.5, "ps": 8.2, "beta": 0.85},
+    "Wipro": {"symbol": "WIPRO.NS", "sector": "IT", "pe": 20.1, "price": 420, "pb": 3.2, "ps": 1.8, "beta": 0.93},
+    "Bajaj Finance": {"symbol": "BAJAJFINSV.NS", "sector": "Finance", "pe": 18.9, "price": 1560, "pb": 2.8, "ps": 3.5, "beta": 1.02},
+    "Maruti Suzuki": {"symbol": "MARUTI.NS", "sector": "Auto", "pe": 15.3, "price": 9350, "pb": 1.5, "ps": 0.7, "beta": 1.15},
+    "IndusInd Bank": {"symbol": "INDUSINDBK.NS", "sector": "Banking", "pe": 16.8, "price": 1140, "pb": 1.9, "ps": 3.8, "beta": 0.98},
 }
 
 sectors = sorted(list(set([v["sector"] for v in nifty50_companies.values()])))
 companies = sorted(nifty50_companies.keys())
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# MODE 1: SINGLE STOCK ANALYSIS
+# MODE 1: SINGLE STOCK ANALYSIS (ABBREVIATED)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 if analysis_mode == "Single Stock Analysis":
@@ -270,7 +277,6 @@ if analysis_mode == "Single Stock Analysis":
         company = nifty50_companies[selected_company]
         st.success(f"✅ Analyzing {selected_company} ({company['symbol']}) for {period}")
         
-        # Key Metrics
         col1, col2, col3, col4, col5 = st.columns(5)
         with col1:
             st.metric("Current Price", f"₹{company['price']:.0f}")
@@ -281,161 +287,22 @@ if analysis_mode == "Single Stock Analysis":
         with col4:
             st.metric("P/S Ratio", f"{company['ps']:.1f}x")
         with col5:
-            st.metric("Div Yield", "2.5%")
+            st.metric("Beta", f"{company['beta']:.2f}")
         
         st.markdown("---")
-        
-        # Five-Lens Scores
         st.markdown("### 🎯 FIVE-LENS FRAMEWORK SCORES")
         
         col1, col2, col3, col4, col5 = st.columns(5)
-        
         with col1:
-            st.markdown("### 📊 Valuation")
-            st.metric("", "78/100")
-        
+            st.metric("Valuation", "78/100")
         with col2:
-            st.markdown("### 🏆 Quality")
-            st.metric("", "82/100")
-        
+            st.metric("Quality", "82/100")
         with col3:
-            st.markdown("### 📈 Growth")
-            st.metric("", "75/100")
-        
+            st.metric("Growth", "75/100")
         with col4:
-            st.markdown("### 💪 Health")
-            st.metric("", "80/100")
-        
+            st.metric("Health", "80/100")
         with col5:
-            st.markdown("### ⚡ Risk")
-            st.metric("", "72/100")
-        
-        st.markdown("---")
-        
-        # Composite Score
-        col1, col2, col3 = st.columns([1, 2, 1])
-        with col2:
-            st.markdown("""
-            <div style="background: linear-gradient(135deg, #003366 0%, #004d80 100%); 
-                        padding: 2rem; border-radius: 10px; text-align: center; color: white;">
-                <h3 style="color: white; margin: 0;">COMPOSITE SCORE</h3>
-                <h1 style="color: white; margin: 0.5rem 0;">77.4/100</h1>
-                <h4 style="color: white; margin: 0;">🟢 GOOD - BUY SIGNAL</h4>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        st.markdown("---")
-        
-        # DETAILED BREAKDOWN TABS
-        st.markdown("### 📊 DETAILED ANALYSIS")
-        
-        tab1, tab2, tab3, tab4 = st.tabs(
-            ["💰 Valuation", "✨ Quality", "📈 Growth", "🏥 Health & Risk"]
-        )
-        
-        with tab1:
-            st.write(f"**Valuation Score: 78/100**")
-            col1, col2, col3, col4 = st.columns(4)
-            with col1:
-                st.metric("P/E Ratio", f"{company['pe']:.1f}x", help="Price-to-Earnings")
-            with col2:
-                st.metric("P/B Ratio", f"{company['pb']:.1f}x", help="Price-to-Book")
-            with col3:
-                st.metric("P/S Ratio", f"{company['ps']:.1f}x", help="Price-to-Sales")
-            with col4:
-                st.metric("Div Yield", "2.5%", help="Dividend Yield")
-            
-            st.write("**Assessment:** Stock is fairly valued with good dividend yield")
-        
-        with tab2:
-            st.write(f"**Quality Score: 82/100**")
-            col1, col2, col3, col4 = st.columns(4)
-            with col1:
-                st.metric("ROE", "18.5%", help="Return on Equity")
-            with col2:
-                st.metric("ROA", "8.2%", help="Return on Assets")
-            with col3:
-                st.metric("NPM", "12.3%", help="Net Profit Margin")
-            with col4:
-                st.metric("ROIC", "15.8%", help="Return on Invested Capital")
-            
-            st.write("**Assessment:** Excellent business quality with strong profitability metrics")
-        
-        with tab3:
-            st.write(f"**Growth Score: 75/100**")
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.metric("Revenue Growth", "12.5%", help="YoY Revenue Growth")
-            with col2:
-                st.metric("Earnings Growth", "15.3%", help="YoY Earnings Growth")
-            with col3:
-                st.metric("PEG Ratio", "1.46", help="P/E to Growth Ratio")
-            
-            st.write("**Assessment:** Moderate growth with reasonable valuation relative to growth")
-        
-        with tab4:
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                st.write(f"**Financial Health: 80/100**")
-                col_a, col_b, col_c = st.columns(3)
-                
-                with col_a:
-                    st.metric("D/E Ratio", "1.2x", help="Debt-to-Equity Ratio")
-                
-                with col_b:
-                    st.metric("Current Ratio", "1.8x", help="Current Ratio (Liquidity)")
-                
-                with col_c:
-                    st.metric("Interest Coverage", "5.3x", help="Interest Coverage Ratio")
-                
-                st.write("**Assessment:** Strong balance sheet with good liquidity and manageable debt")
-            
-            with col2:
-                st.write(f"**Risk & Momentum: 72/100**")
-                col_a, col_b, col_c = st.columns(3)
-                
-                with col_a:
-                    st.metric("Beta", "0.95", help="Market Sensitivity")
-                
-                with col_b:
-                    st.metric("Volatility (252d)", "22.5%", help="Annual Volatility")
-                
-                with col_c:
-                    st.metric("Sharpe Ratio", "1.18", help="Risk-Adjusted Returns")
-                
-                st.write("**Assessment:** Moderate risk with stable market performance")
-        
-        st.markdown("---")
-        
-        # Risk Profile
-        st.markdown("### ⚠️ RISK PROFILE")
-        st.write("""
-        **Overall Risk Level: MODERATE**
-        - Beta of 0.95 indicates stock moves slightly less than market
-        - Volatility of 22.5% is reasonable for equity
-        - Interest Coverage of 5.3x shows comfortable debt servicing capability
-        - Recommended for: Conservative to Moderate investors
-        """)
-        
-        st.markdown("---")
-        
-        # Investment Recommendation
-        st.markdown("### 💡 INVESTMENT RECOMMENDATION")
-        st.info("""
-        **RATING: BUY** ⭐⭐⭐⭐⭐
-        
-        **Composite Score: 77.4/100**
-        
-        This stock demonstrates strong fundamentals across all five lenses:
-        - **Valuation:** Fairly valued with good dividend yield
-        - **Quality:** Excellent business quality and profitability
-        - **Growth:** Moderate growth with reasonable valuations
-        - **Financial Health:** Strong balance sheet and liquidity
-        - **Risk Profile:** Moderate risk with stable performance
-        
-        **Suitable for:** Long-term investors seeking stable growth and dividends
-        """)
+            st.metric("Risk", "72/100")
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # MODE 2: SECTOR COMPARISON
@@ -470,9 +337,6 @@ elif analysis_mode == "Sector Comparison":
         
         df = pd.DataFrame(data)
         st.dataframe(df, use_container_width=True)
-        
-        st.markdown("---")
-        st.info("📊 Sector analysis: Companies sorted by valuation metrics")
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # MODE 3: PEER BENCHMARKING
@@ -488,7 +352,7 @@ elif analysis_mode == "Peer Benchmarking":
         main_stock = st.selectbox("Select Main Stock:", companies, key="main_stock")
     
     with col2:
-        metric = st.selectbox("Compare By:", ["P/E Ratio", "P/B Ratio", "Price", "ROE"], key="metric1")
+        metric = st.selectbox("Compare By:", ["P/E Ratio", "P/B Ratio", "Price", "Beta"], key="metric1")
     
     if st.button("🔄 Benchmark", key="btn3"):
         main_sector = nifty50_companies[main_stock]["sector"]
@@ -503,94 +367,207 @@ elif analysis_mode == "Peer Benchmarking":
                 "Company": company,
                 "Type": is_main,
                 "P/E Ratio": f"{nifty50_companies[company]['pe']:.1f}x",
-                "P/B Ratio": f"{nifty50_companies[company]['pb']:.1f}x",
-                "Price (₹)": f"{nifty50_companies[company]['price']:.0f}",
+                "Beta": f"{nifty50_companies[company]['beta']:.2f}",
                 "Score": "85/100" if company == main_stock else "75/100"
             })
         
         df = pd.DataFrame(data)
         st.dataframe(df, use_container_width=True)
-        
-        st.markdown("---")
-        st.info("📊 Benchmarking: Your stock compared against sector peers")
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# MODE 4: PORTFOLIO RISK
+# MODE 4: PORTFOLIO RISK - WITH DYNAMIC PORTFOLIO MANAGEMENT
 # ═══════════════════════════════════════════════════════════════════════════════
 
 elif analysis_mode == "Portfolio Risk":
     st.markdown("### 💼 Portfolio Risk Analysis")
-    st.write("Analyze risk metrics and diversification of your portfolio")
-    
-    st.write("**Add Stocks to Your Portfolio:**")
-    
-    col1, col2, col3 = st.columns([2, 1, 1])
-    
-    with col1:
-        stock = st.selectbox("Select Stock:", companies, key="port_stock")
-    
-    with col2:
-        qty = st.number_input("Quantity:", min_value=1, max_value=1000, value=10, key="qty1")
-    
-    with col3:
-        price = st.number_input("Price (₹):", min_value=100, max_value=50000, value=2500, key="price1")
-    
-    if st.button("➕ Add to Portfolio", key="btn4"):
-        investment = qty * price
-        st.success(f"✅ Added {qty} shares of {stock} @ ₹{price} = ₹{investment:,.0f}")
+    st.write("Build and analyze your stock portfolio with dynamic add/remove functionality")
     
     st.markdown("---")
+    st.markdown("#### ➕ ADD STOCKS TO YOUR PORTFOLIO")
     
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3, col4 = st.columns([2, 1, 1, 1])
     
     with col1:
-        st.metric("Portfolio Value", "₹50,00,000")
+        add_stock = st.selectbox("Select Stock to Add:", companies, key="port_stock_add")
+    
     with col2:
-        st.metric("Total Stocks", "8")
+        add_qty = st.number_input("Qty:", min_value=1, max_value=10000, value=10, key="qty_add", step=1)
+    
     with col3:
-        st.metric("Avg P/E", "22.5x")
+        add_price = st.number_input("Price (₹):", min_value=100, max_value=50000, value=int(nifty50_companies[add_stock]["price"]), key="price_add", step=10)
+    
     with col4:
-        st.metric("Portfolio Beta", "1.15")
+        if st.button("➕ ADD", key="btn_add", use_container_width=True):
+            # Check if stock already exists
+            existing = [p for p in st.session_state.portfolio if p["company"] == add_stock]
+            
+            if existing:
+                st.warning(f"⚠️ {add_stock} already in portfolio. Delete first to add again with different values.")
+            else:
+                investment_value = add_qty * add_price
+                st.session_state.portfolio.append({
+                    "company": add_stock,
+                    "symbol": nifty50_companies[add_stock]["symbol"],
+                    "qty": add_qty,
+                    "price": add_price,
+                    "value": investment_value,
+                    "beta": nifty50_companies[add_stock]["beta"],
+                    "sector": nifty50_companies[add_stock]["sector"]
+                })
+                st.success(f"✅ Added {add_qty} shares of {add_stock} @ ₹{add_price} = ₹{investment_value:,.0f}")
+                st.rerun()
     
     st.markdown("---")
     
-    col1, col2 = st.columns(2)
+    # Display Portfolio if it has items
+    if st.session_state.portfolio:
+        st.markdown("#### 📋 YOUR PORTFOLIO COMPOSITION")
+        
+        # Create portfolio dataframe
+        portfolio_df = []
+        total_value = 0
+        total_beta_weighted = 0
+        
+        for item in st.session_state.portfolio:
+            portfolio_df.append({
+                "Company": item["company"],
+                "Symbol": item["symbol"],
+                "Quantity": item["qty"],
+                "Entry Price (₹)": f"{item['price']:.0f}",
+                "Value (₹)": f"{item['value']:,.0f}",
+                "Sector": item["sector"],
+                "Beta": f"{item['beta']:.2f}"
+            })
+            total_value += item["value"]
+            total_beta_weighted += item["value"] * item["beta"]
+        
+        df = pd.DataFrame(portfolio_df)
+        st.dataframe(df, use_container_width=True)
+        
+        st.markdown("---")
+        
+        # Portfolio Summary Metrics
+        st.markdown("#### 📊 PORTFOLIO METRICS")
+        
+        col1, col2, col3, col4, col5 = st.columns(5)
+        
+        with col1:
+            st.metric("Total Value", f"₹{total_value:,.0f}")
+        
+        with col2:
+            st.metric("# of Stocks", len(st.session_state.portfolio))
+        
+        with col3:
+            avg_price = total_value / sum(item["qty"] for item in st.session_state.portfolio) if st.session_state.portfolio else 0
+            st.metric("Avg Price", f"₹{avg_price:,.0f}")
+        
+        with col4:
+            portfolio_beta = total_beta_weighted / total_value if total_value > 0 else 0
+            st.metric("Portfolio Beta", f"{portfolio_beta:.2f}")
+        
+        with col5:
+            # Sector count
+            sectors_in_portfolio = len(set(item["sector"] for item in st.session_state.portfolio))
+            st.metric("# of Sectors", sectors_in_portfolio)
+        
+        st.markdown("---")
+        
+        # Portfolio Risk Analysis
+        st.markdown("#### ⚠️ PORTFOLIO RISK ANALYSIS")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("**Risk Metrics:**")
+            risk_data = {
+                "Metric": [
+                    "Portfolio Volatility",
+                    "Sharpe Ratio",
+                    "Max Drawdown",
+                    "Interest Coverage"
+                ],
+                "Value": [
+                    f"{18.2 + (portfolio_beta - 1) * 5:.1f}%",
+                    f"{1.45 - (portfolio_beta - 1) * 0.3:.2f}",
+                    "-12.5%",
+                    "5.3x"
+                ]
+            }
+            risk_df = pd.DataFrame(risk_data)
+            st.dataframe(risk_df, use_container_width=True)
+        
+        with col2:
+            st.markdown("**Health Indicators:**")
+            col_a, col_b, col_c = st.columns(3)
+            with col_a:
+                st.metric("D/E Ratio", "1.2x")
+            with col_b:
+                st.metric("Current Ratio", "1.8x")
+            with col_c:
+                st.metric("Risk Level", "MODERATE" if portfolio_beta < 1.2 else "HIGH")
+        
+        st.markdown("---")
+        
+        # Sector Diversification
+        st.markdown("#### 🏭 SECTOR DIVERSIFICATION")
+        
+        sector_breakdown = {}
+        for item in st.session_state.portfolio:
+            sector = item["sector"]
+            value = item["value"]
+            if sector not in sector_breakdown:
+                sector_breakdown[sector] = 0
+            sector_breakdown[sector] += value
+        
+        sector_data = []
+        for sector, value in sector_breakdown.items():
+            pct = (value / total_value * 100) if total_value > 0 else 0
+            sector_data.append({
+                "Sector": sector,
+                "Value (₹)": f"{value:,.0f}",
+                "% of Portfolio": f"{pct:.1f}%",
+                "Status": "✅ Good" if pct < 40 else "⚠️ Concentrated"
+            })
+        
+        sector_df = pd.DataFrame(sector_data)
+        st.dataframe(sector_df, use_container_width=True)
+        
+        st.markdown("---")
+        
+        # Delete Stock Section
+        st.markdown("#### ❌ REMOVE STOCKS FROM PORTFOLIO")
+        
+        col1, col2 = st.columns([3, 1])
+        
+        with col1:
+            stock_to_delete = st.selectbox(
+                "Select stock to remove:",
+                options=[item["company"] for item in st.session_state.portfolio],
+                key="delete_stock"
+            )
+        
+        with col2:
+            if st.button("❌ DELETE", key="btn_delete", use_container_width=True):
+                st.session_state.portfolio = [p for p in st.session_state.portfolio if p["company"] != stock_to_delete]
+                st.success(f"✅ Removed {stock_to_delete} from portfolio")
+                st.rerun()
+        
+        st.markdown("---")
+        
+        # Clear Portfolio Button
+        if st.button("🗑️ CLEAR ALL PORTFOLIO", key="btn_clear_all"):
+            st.session_state.portfolio = []
+            st.success("✅ Portfolio cleared!")
+            st.rerun()
     
-    with col1:
-        st.markdown("**Portfolio Metrics:**")
-        metrics_data = {
-            "Metric": ["Portfolio Volatility", "Sharpe Ratio", "Max Drawdown", "Diversification"],
-            "Value": ["18.2%", "1.45", "-12.5%", "Good (8 stocks)"]
-        }
-        metrics_df = pd.DataFrame(metrics_data)
-        st.dataframe(metrics_df, use_container_width=True)
-    
-    with col2:
-        st.markdown("**Risk Indicators:**")
-        col_a, col_b, col_c = st.columns(3)
-        with col_a:
-            st.metric("Interest Coverage", "5.3x", help="Debt servicing ability")
-        with col_b:
-            st.metric("D/E Ratio", "1.2x", help="Leverage ratio")
-        with col_c:
-            st.metric("Current Ratio", "1.8x", help="Liquidity ratio")
-    
-    st.markdown("---")
-    
-    st.markdown("**Portfolio Composition:**")
-    
-    portfolio_data = {
-        "Stock": ["TCS", "HDFC Bank", "Infosys", "ICICI Bank", "Maruti Suzuki", "Reliance", "Wipro", "Bajaj Finance"],
-        "Quantity": [10, 15, 8, 20, 5, 12, 25, 18],
-        "Value (₹)": ["39,200", "25,200", "15,040", "19,800", "46,750", "34,200", "10,500", "28,080"],
-        "Beta": ["0.92", "0.88", "0.95", "0.91", "1.15", "1.05", "0.93", "1.02"]
-    }
-    
-    df = pd.DataFrame(portfolio_data)
-    st.dataframe(df, use_container_width=True)
-    
-    st.markdown("---")
-    st.info("📊 Portfolio analysis: Interest Coverage (5.3x), Beta (1.15), and diversification metrics calculated")
+    else:
+        st.info("📊 Your portfolio is empty. Add stocks above to start analyzing!")
+        st.write("Once you add stocks, you'll see:")
+        st.write("- Portfolio composition table")
+        st.write("- Total value and metrics")
+        st.write("- Risk analysis")
+        st.write("- Sector diversification")
+        st.write("- Option to delete individual stocks or clear all")
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # FIVE LENS FRAMEWORK INFO
@@ -607,7 +584,6 @@ with col1:
         <div style="font-size: 24px; margin-bottom: 0.5rem;">📊</div>
         <strong>Valuation (20%)</strong>
         <div style="font-size: 18px; color: #FFD700; margin-top: 0.5rem;">78/100</div>
-        <small>P/E, P/B, P/S ratios</small>
     </div>
     """, unsafe_allow_html=True)
 
@@ -617,7 +593,6 @@ with col2:
         <div style="font-size: 24px; margin-bottom: 0.5rem;">🏆</div>
         <strong>Quality (25%)</strong>
         <div style="font-size: 18px; color: #FFD700; margin-top: 0.5rem;">82/100</div>
-        <small>ROE, ROA metrics</small>
     </div>
     """, unsafe_allow_html=True)
 
@@ -627,7 +602,6 @@ with col3:
         <div style="font-size: 24px; margin-bottom: 0.5rem;">📈</div>
         <strong>Growth (20%)</strong>
         <div style="font-size: 18px; color: #FFD700; margin-top: 0.5rem;">75/100</div>
-        <small>Revenue growth</small>
     </div>
     """, unsafe_allow_html=True)
 
@@ -637,7 +611,6 @@ with col4:
         <div style="font-size: 24px; margin-bottom: 0.5rem;">💪</div>
         <strong>Financial Health (20%)</strong>
         <div style="font-size: 18px; color: #FFD700; margin-top: 0.5rem;">80/100</div>
-        <small>D/E, Interest Coverage</small>
     </div>
     """, unsafe_allow_html=True)
 
@@ -647,7 +620,6 @@ with col5:
         <div style="font-size: 24px; margin-bottom: 0.5rem;">⚡</div>
         <strong>Risk & Momentum (15%)</strong>
         <div style="font-size: 18px; color: #FFD700; margin-top: 0.5rem;">72/100</div>
-        <small>Beta, Volatility</small>
     </div>
     """, unsafe_allow_html=True)
 
@@ -668,13 +640,6 @@ st.markdown("""
                       color: white; text-decoration: none; border-radius: 5px; 
                       font-weight: 600; margin: 0 0.5rem;">
                🔗 LinkedIn Profile
-            </a>
-            <a href="https://github.com/trichyravis" target="_blank" 
-               style="display: inline-block; padding: 0.5rem 1.5rem; 
-                      background: linear-gradient(135deg, #333 0%, #555 100%); 
-                      color: white; text-decoration: none; border-radius: 5px; 
-                      font-weight: 600; margin: 0 0.5rem;">
-               🐙 GitHub
             </a>
         </p>
         <p style="font-size: 0.8rem; margin-top: 1rem;">
