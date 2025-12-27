@@ -71,7 +71,16 @@ st.markdown("""
 # SIDEBAR
 # ═══════════════════════════════════════════════════════════════════════════════
 
-st.sidebar.image("https://via.placeholder.com/300x100?text=The+Mountain+Path", use_column_width=True)
+# Display profile photo from GitHub
+github_username = "trichyravis"
+repo_name = "Stock_Analysis_5LensFramework"
+image_url = f"https://raw.githubusercontent.com/trichyravis/Stock_Analysis_5LensFramework/main/Ravi_Profile_Photo.jpeg"
+
+try:
+    st.sidebar.image(image_url, use_column_width=True)
+except:
+    st.sidebar.write("📸 Profile Photo")
+
 st.sidebar.markdown("---")
 st.sidebar.write("### 📊 STOCK ANALYSIS TOOL")
 st.sidebar.write("Advanced Five-Lens Framework with Risk Metrics")
