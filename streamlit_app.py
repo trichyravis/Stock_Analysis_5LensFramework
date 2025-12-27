@@ -378,7 +378,11 @@ if analysis_mode == "Single Stock Analysis":
                         st.write(f"**Risk & Momentum Score: {lens_scores.risk_momentum:.1f}/100**")
                         col_a, col_b, col_c = st.columns(3)
                         with col_a:
-                            st.metric("Beta", f"{risk_metrics.get('beta', 1.0):.2f}x")
+                            beta = risk_metrics.get('beta')
+                            if beta is not None:
+                                st.metric("Beta", f"{beta:.2f}x")
+                            else:
+                                st.metric("Beta", "N/A", help="Market data not available for Beta calculation")
                         with col_b:
                             st.metric("Volatility (252d)", f"{(risk_metrics.get('volatility_252d', 0.25)*100):.1f}%")
                         with col_c:
