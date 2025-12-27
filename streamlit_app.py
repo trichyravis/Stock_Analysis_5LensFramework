@@ -43,31 +43,37 @@ st.markdown("""
     }
     
     /* ════════════════════════════════════════════════════════════ */
-    /* HERO HEADER - BIG AND PROMINENT */
+    /* HERO HEADER - IMPROVED LEFT-RIGHT LAYOUT */
     /* ════════════════════════════════════════════════════════════ */
     
     .hero-title {
         background: linear-gradient(135deg, #003366 0%, #004d80 50%, #003366 100%);
-        padding: 4rem 2rem;
+        padding: 3rem 2rem;
         border-radius: 20px;
-        text-align: center;
         margin: 0rem 0rem 2rem 0rem;
         box-shadow: 0 12px 30px rgba(0, 51, 102, 0.4);
         border: 4px solid #003366;
+        display: flex;
+        align-items: center;
+        gap: 3rem;
     }
     
-    /* Mountain emoji - HUGE AND ANIMATED */
+    /* Mountain emoji on left */
     .mountain-emoji {
-        font-size: 160px;
-        margin-bottom: 1.5rem;
-        display: block;
+        font-size: 120px;
+        flex-shrink: 0;
         animation: float 3s ease-in-out infinite;
         text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
     }
     
-    /* Main title - VERY LARGE */
-    .hero-title h1 {
-        font-size: 56px;
+    /* Text content on right */
+    .hero-text-right {
+        flex: 1;
+        text-align: right;
+    }
+    
+    .hero-text-right h1 {
+        font-size: 48px;
         font-weight: 900;
         color: white;
         margin: 0.3rem 0;
@@ -76,13 +82,72 @@ st.markdown("""
         line-height: 1.2;
     }
     
-    /* Subtitle */
-    .hero-title p {
-        font-size: 18px;
+    .hero-text-right p:first-of-type {
+        font-size: 20px;
         color: #E0F0FF;
-        margin: 0.7rem 0;
+        margin: 1rem 0;
         font-weight: 500;
         letter-spacing: 1px;
+    }
+    
+    .hero-text-right p:last-of-type {
+        font-size: 16px;
+        color: #E0F0FF;
+        margin: 0.5rem 0;
+        font-weight: 400;
+    }
+    
+    /* ════════════════════════════════════════════════════════════ */
+    /* RESPONSIVE DESIGN FOR MOBILE */
+    /* ════════════════════════════════════════════════════════════ */
+    
+    @media (max-width: 768px) {
+        .hero-title {
+            flex-direction: column;
+            text-align: center;
+            padding: 2rem 1.5rem;
+            gap: 1.5rem;
+        }
+        
+        .mountain-emoji {
+            font-size: 100px;
+            margin: 0;
+        }
+        
+        .hero-text-right {
+            text-align: center;
+        }
+        
+        .hero-text-right h1 {
+            font-size: 42px;
+        }
+        
+        .hero-text-right p:first-of-type {
+            font-size: 18px;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .hero-title {
+            padding: 1.5rem 1rem;
+        }
+        
+        .mountain-emoji {
+            font-size: 80px;
+        }
+        
+        .hero-text-right h1 {
+            font-size: 36px;
+            letter-spacing: 2px;
+        }
+        
+        .hero-text-right p:first-of-type {
+            font-size: 16px;
+        }
+        
+        .hero-text-right p:last-of-type {
+            font-size: 14px;
+        }
     }
     
     /* Floating animation */
@@ -177,10 +242,12 @@ st.markdown("""
 st.markdown("""
     <div class="hero-title">
         <div class="mountain-emoji">🏔️</div>
-        <h1>THE MOUNTAIN PATH</h1>
-        <h1 style="margin-top: -0.5rem; margin-bottom: 1.5rem;">WORLD OF FINANCE</h1>
-        <p>Stock Analysis Platform Using Five Lens Framework</p>
-        <p style="font-size: 16px;">Valuation (20%) • Quality (25%) • Growth (20%) • Financial Health (20%) • Risk & Momentum (15%)</p>
+        <div class="hero-text-right">
+            <h1>THE MOUNTAIN PATH</h1>
+            <h1>WORLD OF FINANCE</h1>
+            <p>Stock Analysis Platform Using Five Lens Framework</p>
+            <p>Valuation (20%) • Quality (25%) • Growth (20%) • Financial Health (20%) • Risk & Momentum (15%)</p>
+        </div>
     </div>
 """, unsafe_allow_html=True)
 
@@ -563,7 +630,7 @@ if analysis_mode == "Single Stock Analysis":
                 st.markdown(recommendation)
 
 # ═════════════════════════════════════════════════════════════════════════════════
-# FOOTER 
+# FOOTER
 # ═════════════════════════════════════════════════════════════════════════════════
 
 st.markdown("---")
