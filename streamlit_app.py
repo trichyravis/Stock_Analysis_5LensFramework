@@ -801,25 +801,35 @@ elif analysis_mode == "Portfolio Risk":
             if existing:
                 st.warning(f"⚠️ {add_stock} already in portfolio. Delete first to re-add.")
             else:
-                # Get current market price
-                current_price = nifty50_companies[add_stock]["price"]
-                investment_value = st.session_state.portfolio_value * (allocation_pct / 100)
-                shares = investment_value / current_price
+                # Calculate current total allocation
+                current_allocation = sum([p["allocation_pct"] for p in st.session_state.portfolio_holdings])
+                new_total_allocation = current_allocation + allocation_pct
                 
-                # Add to portfolio
-                st.session_state.portfolio_holdings.append({
-                    "company": add_stock,
-                    "symbol": nifty50_companies[add_stock]["symbol"],
-                    "allocation_pct": allocation_pct,
-                    "current_price": current_price,
-                    "investment_value": investment_value,
-                    "shares": shares,
-                    "sector": nifty50_companies[add_stock]["sector"],
-                    "beta": nifty50_companies[add_stock]["beta"]
-                })
-                
-                st.success(f"✅ Added {add_stock} - {allocation_pct}% allocation = ₹{investment_value:,.0f} ({shares:.2f} shares @ ₹{current_price})")
-                st.rerun()
+                # Validate allocation does not exceed 100%
+                if new_total_allocation > 100:
+                    remaining = 100 - current_allocation
+                    st.error(f"❌ Cannot add {allocation_pct}%! Total allocation would be {new_total_allocation:.1f}% (exceeds 100%)")
+                    st.warning(f"⚠️ You can allocate up to {remaining:.1f}% more. Please reduce allocation % and try again.")
+                else:
+                    # Get current market price
+                    current_price = nifty50_companies[add_stock]["price"]
+                    investment_value = st.session_state.portfolio_value * (allocation_pct / 100)
+                    shares = investment_value / current_price
+                    
+                    # Add to portfolio
+                    st.session_state.portfolio_holdings.append({
+                        "company": add_stock,
+                        "symbol": nifty50_companies[add_stock]["symbol"],
+                        "allocation_pct": allocation_pct,
+                        "current_price": current_price,
+                        "investment_value": investment_value,
+                        "shares": shares,
+                        "sector": nifty50_companies[add_stock]["sector"],
+                        "beta": nifty50_companies[add_stock]["beta"]
+                    })
+                    
+                    st.success(f"✅ Added {add_stock} - {allocation_pct}% allocation = ₹{investment_value:,.0f} ({shares:.2f} shares @ ₹{current_price})")
+                    st.rerun()
     
     st.markdown("---")
     
@@ -851,12 +861,24 @@ elif analysis_mode == "Portfolio Risk":
         df = pd.DataFrame(portfolio_df)
         st.dataframe(df, use_container_width=True)
         
+        # Show warning if allocation exceeds 100%
+        if total_allocation > 100:
+            st.error(f"⚠️ **PORTFOLIO EXCEEDS 100% ALLOCATION!**\n\nCurrent: {total_allocation:.1f}% | Excess: {total_allocation - 100:.1f}%\n\nPlease delete stocks or reduce allocations to bring total to 100% or less.")
+        
         # Show allocation summary
         col1, col2, col3, col4 = st.columns(4)
         
         with col1:
-            st.metric("Total Allocation", f"{total_allocation:.1f}%", 
-                     delta="Complete" if total_allocation == 100 else f"Remaining: {100-total_allocation:.1f}%")
+            if total_allocation > 100:
+                st.metric("Total Allocation", f"{total_allocation:.1f}%", 
+                         delta="❌ EXCEEDS 100%", delta_color="inverse")
+            elif total_allocation == 100:
+                st.metric("Total Allocation", f"{total_allocation:.1f}%", 
+                         delta="✅ Complete", delta_color="off")
+            else:
+                remaining = 100 - total_allocation
+                st.metric("Total Allocation", f"{total_allocation:.1f}%", 
+                         delta=f"Remaining: {remaining:.1f}%")
         with col2:
             st.metric("Total Invested", f"₹{total_value:,.0f}")
         with col3:
