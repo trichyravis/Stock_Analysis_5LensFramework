@@ -1,344 +1,267 @@
-"""
-═══════════════════════════════════════════════════════════════════════════════
-THE MOUNTAIN PATH - WORLD OF FINANCE
-Data Fetcher Module
-Live data from yfinance with caching and error handling
-═══════════════════════════════════════════════════════════════════════════════
-"""
 
+import yfinance as yf
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
-from typing import Dict, Optional, Tuple
-import streamlit as st
-import warnings
-warnings.filterwarnings('ignore')
-
+import requests
+from typing import Dict, Tuple, Optional
 
 class DataFetcher:
-    """Fetch live data from yfinance with caching"""
+    """Fetch and process stock data from yfinance"""
     
-    CACHE_DURATION = 300  # 5 minutes
+    NIFTY50_REGISTRY = {
+        'ADANIPORTS': {'symbol': 'ADANIPORTS.NS', 'sector': 'Ports & Services'},
+        'ASIANPAINT': {'symbol': 'ASIANPAINT.NS', 'sector': 'Chemicals'},
+        'AXISBANK': {'symbol': 'AXISBANK.NS', 'sector': 'Banks'},
+        'BAJAJFINSV': {'symbol': 'BAJAJFINSV.NS', 'sector': 'Financial Services'},
+        'BAJAJFS': {'symbol': 'BAJAJFS.NS', 'sector': 'Financial Services'},
+        'BAJAJ-AUTO': {'symbol': 'BAJAJ-AUTO.NS', 'sector': 'Automobiles'},
+        'BPCL': {'symbol': 'BPCL.NS', 'sector': 'Oil & Gas'},
+        'BHARTIARTL': {'symbol': 'BHARTIARTL.NS', 'sector': 'Telecommunications'},
+        'BRITANNIA': {'symbol': 'BRITANNIA.NS', 'sector': 'FMCG'},
+        'CIPLA': {'symbol': 'CIPLA.NS', 'sector': 'Pharmaceuticals'},
+        'COALINDIA': {'symbol': 'COALINDIA.NS', 'sector': 'Metals & Mining'},
+        'COLPAL': {'symbol': 'COLPAL.NS', 'sector': 'FMCG'},
+        'DRREDDY': {'symbol': 'DRREDDY.NS', 'sector': 'Pharmaceuticals'},
+        'EICHERMOT': {'symbol': 'EICHERMOT.NS', 'sector': 'Automobiles'},
+        'GAIL': {'symbol': 'GAIL.NS', 'sector': 'Oil & Gas'},
+        'GRASIM': {'symbol': 'GRASIM.NS', 'sector': 'Chemicals'},
+        'HCLTECH': {'symbol': 'HCLTECH.NS', 'sector': 'IT'},
+        'HDFC': {'symbol': 'HDFC.NS', 'sector': 'Financial Services'},
+        'HDFCBANK': {'symbol': 'HDFCBANK.NS', 'sector': 'Banks'},
+        'HEROMOTOCO': {'symbol': 'HEROMOTOCO.NS', 'sector': 'Automobiles'},
+        'HINDALCO': {'symbol': 'HINDALCO.NS', 'sector': 'Metals & Mining'},
+        'HINDUNILVR': {'symbol': 'HINDUNILVR.NS', 'sector': 'FMCG'},
+        'ICICIBANK': {'symbol': 'ICICIBANK.NS', 'sector': 'Banks'},
+        'INDIGO': {'symbol': 'INDIGO.NS', 'sector': 'Airlines'},
+        'INFY': {'symbol': 'INFY.NS', 'sector': 'IT'},
+        'IOCL': {'symbol': 'IOCL.NS', 'sector': 'Oil & Gas'},
+        'ITC': {'symbol': 'ITC.NS', 'sector': 'Diversified'},
+        'JSWSTEEL': {'symbol': 'JSWSTEEL.NS', 'sector': 'Metals & Mining'},
+        'KOTAKBANK': {'symbol': 'KOTAKBANK.NS', 'sector': 'Banks'},
+        'LT': {'symbol': 'LT.NS', 'sector': 'Engineering'},
+        'LTIM': {'symbol': 'LTIM.NS', 'sector': 'IT'},
+        'MARUTI': {'symbol': 'MARUTI.NS', 'sector': 'Automobiles'},
+        'MAXHEALTH': {'symbol': 'MAXHEALTH.NS', 'sector': 'Healthcare'},
+        'MINDTREE': {'symbol': 'MINDTREE.NS', 'sector': 'IT'},
+        'NESTLEIND': {'symbol': 'NESTLEIND.NS', 'sector': 'FMCG'},
+        'NTPC': {'symbol': 'NTPC.NS', 'sector': 'Power'},
+        'ONGC': {'symbol': 'ONGC.NS', 'sector': 'Oil & Gas'},
+        'POWERGRID': {'symbol': 'POWERGRID.NS', 'sector': 'Power'},
+        'RELIANCE': {'symbol': 'RELIANCE.NS', 'sector': 'Oil & Gas'},
+        'SBICARD': {'symbol': 'SBICARD.NS', 'sector': 'Financial Services'},
+        'SBILIFE': {'symbol': 'SBILIFE.NS', 'sector': 'Financial Services'},
+        'SBIN': {'symbol': 'SBIN.NS', 'sector': 'Banks'},
+        'SUNPHARMA': {'symbol': 'SUNPHARMA.NS', 'sector': 'Pharmaceuticals'},
+        'TCS': {'symbol': 'TCS.NS', 'sector': 'IT'},
+        'TECHM': {'symbol': 'TECHM.NS', 'sector': 'IT'},
+        'TITAN': {'symbol': 'TITAN.NS', 'sector': 'Consumer Discretionary'},
+        'TRENT': {'symbol': 'TRENT.NS', 'sector': 'Retail'},
+        'ULTRACEMCO': {'symbol': 'ULTRACEMCO.NS', 'sector': 'Cement'},
+        'WIPRO': {'symbol': 'WIPRO.NS', 'sector': 'IT'},
+    }
     
     @staticmethod
-    @st.cache_data(ttl=CACHE_DURATION)
-    def fetch_stock_data(symbol: str, period: str = '1y') -> Tuple[Optional[pd.DataFrame], Optional[Dict]]:
+    def get_nifty50_registry() -> Dict:
+        """Return Nifty 50 registry"""
+        return DataFetcher.NIFTY50_REGISTRY
+    
+    @staticmethod
+    def fetch_stock_data(symbol: str, period: str = "1y") -> Tuple[Optional[pd.DataFrame], Dict]:
         """
-        Fetch historical price data and current info
+        Fetch stock data from yfinance
         
-        Parameters:
-        -----------
-        symbol : str
-            Stock symbol (e.g., 'HDFCBANK.NS')
-        period : str
-            Period of historical data ('1y', '2y', '5y', etc.)
-            
+        Args:
+            symbol: Stock symbol (e.g., 'INFY.NS')
+            period: Time period (1y, 2y, 5y)
+        
         Returns:
-        --------
-        Tuple[Optional[pd.DataFrame], Optional[Dict]]
-            (price_history, stock_info) or (None, None) if error
+            Tuple of (price_history DataFrame, info dict)
         """
         try:
-            import yfinance as yf
-            
-            # Fetch ticker
             ticker = yf.Ticker(symbol)
             
-            # Get historical data
-            hist = ticker.history(period=period)
+            # Fetch historical data
+            price_hist = ticker.history(period=period)
             
-            if hist.empty:
-                return None, None
+            if price_hist.empty:
+                return None, {}
             
-            # Get info
+            # Fetch info
             info = ticker.info
             
-            return hist, info
-            
-        except Exception as e:
-            st.error(f"Error fetching data for {symbol}: {str(e)}")
-            return None, None
-
-    @staticmethod
-    @st.cache_data(ttl=CACHE_DURATION)
-    def fetch_market_index(index_symbol: str = '^NSEI', period: str = '1y') -> Optional[pd.Series]:
-        """
-        Fetch market index data (for beta calculation)
+            return price_hist, info
         
-        Parameters:
-        -----------
-        index_symbol : str
-            Index symbol ('^NSEI' for Nifty 50)
-        period : str
-            Period of data
-            
+        except Exception as e:
+            print(f"Error fetching data for {symbol}: {e}")
+            return None, {}
+    
+    @staticmethod
+    def fetch_market_index(index_symbol: str = "^NSEI", period: str = "1y") -> Optional[pd.DataFrame]:
+        """
+        Fetch market index data (Nifty 50)
+        
+        Args:
+            index_symbol: Index symbol (default: ^NSEI for NSE)
+            period: Time period
+        
         Returns:
-        --------
-        Optional[pd.Series]
-            Index prices or None if error
+            Price history DataFrame
         """
         try:
-            import yfinance as yf
-            
             index = yf.Ticker(index_symbol)
-            hist = index.history(period=period)
-            
-            if hist.empty:
-                return None
-            
-            return hist['Close']
-            
+            market_data = index.history(period=period)
+            return market_data if not market_data.empty else None
         except Exception as e:
+            print(f"Error fetching market index: {e}")
             return None
-
+    
     @staticmethod
-    def extract_stock_data(info: Dict, price_history: pd.DataFrame) -> Dict:
+    def extract_stock_data(info: Dict, price_hist: pd.DataFrame) -> Dict:
         """
-        Extract and standardize stock data from yfinance info
+        Extract key stock data
         
-        Parameters:
-        -----------
-        info : Dict
-            Stock info from yfinance
-        price_history : pd.DataFrame
-            Historical prices
-            
+        Args:
+            info: Stock info dictionary from yfinance
+            price_hist: Historical price data
+        
         Returns:
-        --------
-        Dict : Standardized stock data
+            Dictionary with key metrics
         """
         try:
-            current_price = price_history['Close'].iloc[-1] if len(price_history) > 0 else None
+            current_price = info.get('currentPrice') or price_hist['Close'].iloc[-1]
             
-            # 52-week metrics
-            high_52w = price_history['Close'].max() if len(price_history) > 0 else None
-            low_52w = price_history['Close'].min() if len(price_history) > 0 else None
-            
-            # Calculate momentum
-            if len(price_history) > 252:
-                price_52w_ago = price_history['Close'].iloc[-252]
-                momentum = (current_price - price_52w_ago) / price_52w_ago if price_52w_ago != 0 else 0
-            else:
-                momentum = 0
-            
-            stock_data = {
-                'symbol': info.get('symbol', 'N/A'),
-                'company_name': info.get('longName', 'N/A'),
-                'sector': info.get('sector', 'N/A'),
+            return {
                 'current_price': current_price,
-                'pe_ratio': info.get('trailingPE', info.get('forwardPE', None)),
-                'pb_ratio': info.get('priceToBook', None),
-                'ps_ratio': info.get('priceToSalesTrailing12Months', None),
-                'market_cap': info.get('marketCap', None),
-                'dividend_yield': info.get('dividendYield', None),
-                'eps': info.get('trailingEps', None),
-                'book_value': info.get('bookValue', None),
-                '52w_high': high_52w,
-                '52w_low': low_52w,
-                'price_momentum_52w': momentum,
-                'avg_volume': info.get('averageVolume', None),
-                'last_updated': datetime.now()
+                'pe_ratio': info.get('trailingPE'),
+                'pb_ratio': info.get('priceToBook'),
+                'ps_ratio': info.get('priceToSalesTrailing12Months'),
+                'dividend_yield': info.get('dividendYield'),
+                'market_cap': info.get('marketCap'),
+                '52_week_high': info.get('fiftyTwoWeekHigh'),
+                '52_week_low': info.get('fiftyTwoWeekLow'),
+                '52_week_change': info.get('fiftyTwoWeekChangePercent'),
             }
-            
-            return stock_data
-            
         except Exception as e:
+            print(f"Error extracting stock data: {e}")
             return {}
-
+    
     @staticmethod
-    def extract_financial_metrics(info: Dict, ticker_obj=None) -> Dict:
+    def extract_financial_metrics(info: Dict) -> Dict:
         """
-        Extract financial metrics from yfinance
+        Extract financial metrics with multiple fallback approaches
+        Handles missing data gracefully
         
-        Parameters:
-        -----------
-        info : Dict
-            Stock info
-        ticker_obj : Optional
-            yfinance Ticker object (for additional data)
-            
+        Args:
+            info: Stock info dictionary from yfinance
+        
         Returns:
-        --------
-        Dict : Financial metrics
+            Dictionary with financial metrics
         """
         try:
-            metrics = {
-                # Profitability
-                'npm': info.get('profitMargins', None),
-                'roe': info.get('returnOnEquity', None),
-                'roa': info.get('returnOnAssets', None),
-                'roic': info.get('returnOnCapital', None),
-                
-                # Leverage
-                'debt_to_equity': None,
-                'debt_to_assets': None,
-                'current_ratio': None,
-                'quick_ratio': None,
-                'interest_coverage': None,
-                
-                # Growth
-                'revenue_growth_yoy': info.get('revenuePerShare', None),
-                'earnings_growth_yoy': info.get('earningsGrowth', None),
-                'peg_ratio': None,
-                
-                # Cash Flow
-                'free_cash_flow': info.get('freeCashflow', None),
-                'operating_cash_flow': info.get('operatingCashflow', None),
-                'fcf_to_net_income': None,
-            }
+            metrics = {}
             
-            # Calculate D/E if available
-            try:
-                total_debt = info.get('totalDebt', None)
-                total_equity = info.get('totalStockholderEquity', None)
-                if total_debt and total_equity:
-                    metrics['debt_to_equity'] = total_debt / total_equity
-            except:
-                pass
+            # ROE (Return on Equity) - Primary source
+            metrics['roe'] = info.get('returnOnEquity')
             
-            # Calculate PEG ratio if growth available
-            try:
-                pe = info.get('trailingPE')
-                growth = info.get('earningsGrowth')
-                if pe and growth and growth != 0:
-                    metrics['peg_ratio'] = pe / (abs(growth) * 100)
-            except:
-                pass
+            # NPM (Net Profit Margin) - Primary source
+            metrics['npm'] = info.get('profitMargins')
+            
+            # ROA (Return on Assets) - Primary source
+            metrics['roa'] = info.get('returnOnAssets')
+            
+            # ROIC (Return on Invested Capital) - Primary source
+            metrics['roic'] = info.get('returnOnCapital')
+            
+            # Debt to Equity Ratio - Multiple approaches
+            debt_to_equity = None
+            
+            # Approach 1: Direct from info
+            if debt_to_equity is None:
+                debt_to_equity = info.get('debtToEquity')
+            
+            # Approach 2: Calculate from total debt and equity
+            if debt_to_equity is None:
+                try:
+                    total_debt = info.get('totalDebt')
+                    total_equity = info.get('totalEquity')
+                    book_value = info.get('bookValue')
+                    shares_outstanding = info.get('sharesOutstanding', 1)
+                    
+                    if total_debt and total_equity and total_equity > 0:
+                        debt_to_equity = total_debt / total_equity
+                    elif total_debt and book_value and shares_outstanding and book_value * shares_outstanding > 0:
+                        debt_to_equity = total_debt / (book_value * shares_outstanding)
+                except Exception as e:
+                    print(f"Error calculating D/E ratio: {e}")
+            
+            metrics['debt_to_equity'] = debt_to_equity
+            
+            # Current Ratio - Multiple approaches
+            current_ratio = None
+            
+            # Approach 1: Direct from info
+            if current_ratio is None:
+                current_ratio = info.get('currentRatio')
+            
+            # Approach 2: Calculate from current assets and liabilities
+            if current_ratio is None:
+                try:
+                    current_assets = info.get('currentAssets')
+                    current_liabilities = info.get('currentLiabilities')
+                    
+                    if current_assets and current_liabilities and current_liabilities > 0:
+                        current_ratio = current_assets / current_liabilities
+                except Exception as e:
+                    print(f"Error calculating Current ratio: {e}")
+            
+            metrics['current_ratio'] = current_ratio
+            
+            # Interest Coverage - Multiple approaches
+            interest_coverage = None
+            
+            # Approach 1: Direct from info
+            if interest_coverage is None:
+                interest_coverage = info.get('interestCoverage')
+            
+            # Approach 2: Calculate from EBIT and interest expense
+            if interest_coverage is None:
+                try:
+                    ebit = info.get('ebit')
+                    operating_income = info.get('operatingIncome')
+                    interest_expense = info.get('interestExpense')
+                    
+                    earnings = ebit or operating_income
+                    
+                    if earnings and interest_expense and interest_expense > 0:
+                        interest_coverage = earnings / interest_expense
+                except Exception as e:
+                    print(f"Error calculating Interest coverage: {e}")
+            
+            metrics['interest_coverage'] = interest_coverage
+            
+            # Revenue Growth YoY
+            metrics['revenue_growth_yoy'] = info.get('revenueGrowth')
+            
+            # Earnings Growth YoY
+            metrics['earnings_growth_yoy'] = info.get('earningsGrowth')
+            
+            # PEG Ratio
+            metrics['peg_ratio'] = info.get('pegRatio')
             
             return metrics
             
         except Exception as e:
-            return {}
-
-    @staticmethod
-    def validate_data(stock_data: Dict, financial_metrics: Dict) -> bool:
-        """
-        Validate that we have minimum required data
-        
-        Parameters:
-        -----------
-        stock_data : Dict
-            Stock data
-        financial_metrics : Dict
-            Financial metrics
-            
-        Returns:
-        --------
-        bool : True if sufficient data
-        """
-        # Check if we have at least current price
-        if not stock_data.get('current_price'):
-            return False
-        
-        # Check if we have at least some valuation metrics
-        valuation_metrics = [stock_data.get('pe_ratio'), 
-                            stock_data.get('pb_ratio'),
-                            stock_data.get('ps_ratio')]
-        
-        if not any(valuation_metrics):
-            return False
-        
-        return True
-
-    @staticmethod
-    def get_nifty50_registry() -> Dict:
-        """
-        Get registry of Nifty 50 companies with symbols
-        
-        Returns:
-        --------
-        Dict : Company registry
-        """
-        registry = {
-            # BANKING
-            'HDFC BANK': {'symbol': 'HDFCBANK.NS', 'sector': 'Banking'},
-            'ICICI BANK': {'symbol': 'ICICIBANK.NS', 'sector': 'Banking'},
-            'AXIS BANK': {'symbol': 'AXISBANK.NS', 'sector': 'Banking'},
-            'SBI': {'symbol': 'SBIN.NS', 'sector': 'Banking'},
-            'KOTAK BANK': {'symbol': 'KOTAKBANK.NS', 'sector': 'Banking'},
-            'INDUSIND BANK': {'symbol': 'INDUSINDBK.NS', 'sector': 'Banking'},
-            
-            # IT
-            'TCS': {'symbol': 'TCS.NS', 'sector': 'Information Technology'},
-            'INFOSYS': {'symbol': 'INFY.NS', 'sector': 'Information Technology'},
-            'WIPRO': {'symbol': 'WIPRO.NS', 'sector': 'Information Technology'},
-            'HCL TECH': {'symbol': 'HCLTECH.NS', 'sector': 'Information Technology'},
-            
-            # AUTOMOBILES
-            'MARUTI': {'symbol': 'MARUTI.NS', 'sector': 'Automobile'},
-            'TATA MOTORS': {'symbol': 'TATAMOTORS.NS', 'sector': 'Automobile'},
-            'BAJAJ AUTO': {'symbol': 'BAJAJAUT.NS', 'sector': 'Automobile'},
-            'HERO MOTOCORP': {'symbol': 'HEROMOTOCORP.NS', 'sector': 'Automobile'},
-            
-            # PHARMA
-            'SUN PHARMA': {'symbol': 'SUNPHARMA.NS', 'sector': 'Pharmaceuticals'},
-            'CIPLA': {'symbol': 'CIPLA.NS', 'sector': 'Pharmaceuticals'},
-            'LAURUS LABS': {'symbol': 'LAURUSLAB.NS', 'sector': 'Pharmaceuticals'},
-            
-            # ENERGY
-            'RELIANCE': {'symbol': 'RELIANCE.NS', 'sector': 'Energy'},
-            'POWER GRID': {'symbol': 'POWERGRID.NS', 'sector': 'Energy'},
-            'GAIL': {'symbol': 'GAIL.NS', 'sector': 'Energy'},
-            
-            # FINANCE
-            'BAJAJ FINSERV': {'symbol': 'BAJAJFINSV.NS', 'sector': 'Financial Services'},
-            
-            # CONSUMER
-            'ITC': {'symbol': 'ITC.NS', 'sector': 'Consumer Goods'},
-            'NESTLE INDIA': {'symbol': 'NESTLEIND.NS', 'sector': 'Consumer Goods'},
-            'BRITANNIA': {'symbol': 'BRITANNIA.NS', 'sector': 'Consumer Goods'},
-            'HINDUSTAN UNILEVER': {'symbol': 'HINDUNILVR.NS', 'sector': 'Consumer Goods'},
-            
-            # METALS
-            'TATA STEEL': {'symbol': 'TATASTEEL.NS', 'sector': 'Steel'},
-            'HINDALCO': {'symbol': 'HINDALCO.NS', 'sector': 'Metals'},
-            
-            # CEMENT
-            'SHREE CEMENT': {'symbol': 'SHREECEMENT.NS', 'sector': 'Cement'},
-            
-            # REALTY
-            'DLF': {'symbol': 'DLF.NS', 'sector': 'Realty'},
-            
-            # PORTS
-            'ADANI PORTS': {'symbol': 'ADANIPORTS.NS', 'sector': 'Ports & Logistics'},
-        }
-        
-        return registry
-
-    @staticmethod
-    def batch_fetch_stocks(symbols: list, period: str = '1y', show_progress: bool = True) -> Dict[str, Tuple]:
-        """
-        Fetch data for multiple stocks
-        
-        Parameters:
-        -----------
-        symbols : list
-            List of symbols
-        period : str
-            Period of data
-        show_progress : bool
-            Show progress bar
-            
-        Returns:
-        --------
-        Dict : Symbol -> (price_history, info)
-        """
-        results = {}
-        
-        if show_progress:
-            progress_bar = st.progress(0)
-            status_text = st.empty()
-        
-        for i, symbol in enumerate(symbols):
-            if show_progress:
-                progress = (i + 1) / len(symbols)
-                progress_bar.progress(progress)
-                status_text.text(f"Fetching {symbol}... ({i+1}/{len(symbols)})")
-            
-            price_hist, info = DataFetcher.fetch_stock_data(symbol, period)
-            results[symbol] = (price_hist, info)
-        
-        if show_progress:
-            status_text.empty()
-        
-        return results
+            print(f"Error extracting financial metrics: {e}")
+            return {
+                'roe': None,
+                'npm': None,
+                'roa': None,
+                'roic': None,
+                'debt_to_equity': None,
+                'current_ratio': None,
+                'interest_coverage': None,
+                'revenue_growth_yoy': None,
+                'earnings_growth_yoy': None,
+                'peg_ratio': None,
+            }
